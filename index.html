@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>My Work Tracker</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet" />
+<style>
+  input[type=range]{accent-color:#4f46e5}
+  input[type=checkbox]{accent-color:#4f46e5}
+  select{appearance:auto}
+  body{font-family:system-ui,-apple-system,sans-serif}
+  ::-webkit-scrollbar{width:6px}
+  ::-webkit-scrollbar-track{background:#f1f5f9}
+  ::-webkit-scrollbar-thumb{background:#c7d2fe;border-radius:3px}
+</style>
+</head>
+<body class="bg-gray-50">
+<div id="root"></div>
+<script type="text/babel">
+const {useState,useReducer,useEffect,useRef}=React;
+
+const STATUS_OPTIONS=["In Progress","Pending","Blocked","Complete","On Hold"];
+const STATUS_COLORS={"In Progress":"bg-blue-100 text-blue-800","Pending":"bg-yellow-100 text-yellow-800","Blocked":"bg-red-100 text-red-800","Complete":"bg-green-100 text-green-800","On Hold":"bg-gray-100 text-gray-700"};
+const STATUS_BAR={"In Progress":"bg-blue-400","Pending":"bg-yellow-400","Blocked":"bg-red-400","Complete":"bg-green-400","On Hold":"bg-gray-400"};
+const PRIORITY_COLORS={"High":"bg-red-50 text-red-700 border border-red-200","Medium":"bg-orange-50 text-orange-700 border border-orange-200","Low":"bg-gray-50 text-gray-600 border border-gray-200"};
+const CATEGORIES=["Tooling & Quality","Reporting","People & Hiring","Scheduling","Operations"];
+
+const INITIAL_TASKS=[
+  {id:1,name:"#help-me Channel Coaching Plan",category:"Operations",status:"In Progress",priority:"High",notes:"",pinned:false,startDate:"",dueDate:"",progress:30,jiraUrl:"",confluenceUrl:"",milestones:[]},
+  {id:2,name:"Zendesk Quality Application Review",category:"Tooling & Quality",status:"In Progress",priority:"High",notes:"",pinned:false,startDate:"",dueDate:"",progress:40,jiraUrl:"",confluenceUrl:"",milestones:[]},
+  {id:3,name:"Zendesk Copilot Application Review",category:"Tooling & Quality",status:"In Progress",priority:"Medium",notes:"",pinned:false,startDate:"",dueDate:"",progress:20,jiraUrl:"",confluenceUrl:"",milestones:[]},
+  {id:4,name:"Zendesk Maintenance",category:"Tooling & Quality",status:"In Progress",priority:"Medium",notes:"",pinned:false,startDate:"",dueDate:"",progress:50,jiraUrl:"",confluenceUrl:"",milestones:[]},
+  {id:5,name:"ProHance Schedule Adherence",category:"Scheduling",status:"In Progress",priority:"High",notes:"",pinned:false,startDate:"",dueDate:"",progress:60,jiraUrl:"",confluenceUrl:"",milestones:[]},
+  {id:6,name:"ProHance QBR",category:"Reporting",status:"Pending",priority:"Medium",notes:"",pinned:false,startDate:"",dueDate:"",progress:0,jiraUrl:"",confluenceUrl:"",milestones:[]},
+  {id:7,name:"Tidio Dispositions",category:"Tooling & Quality",status:"In Progress",priority:"Medium",notes:"",pinned:false,startDate:"",dueDate:"",progress:35,jiraUrl:"",confluenceUrl:"",milestones:[]},
+  {id:8,name:"Tidio Notification Launch",category:"Tooling & Quality",status:"Pending",priority:"High",notes:"",pinned:false,startDate:"",dueDate:"",progress:10,jiraUrl:"",confluenceUrl:"",milestones:[]},
+  {id:9,name:"Tidio Automations & Knowledge",category:"Tooling & Quality",status:"In Progress",priority:"Medium",notes:"",pinned:false,startDate:"",dueDate:"",progress:25,jiraUrl:"",confluenceUrl:"",milestones:[]},
+  {id:10,name:"Contact Us Page Updates",category:"Operations",status:"In Progress",priority:"Low",notes:"",pinned:false,startDate:"",dueDate:"",progress:70,jiraUrl:"",confluenceUrl:"",milestones:[]},
+  {id:11,name:"Claims Tagging in Kata",category:"Tooling & Quality",status:"In Progress",priority:"Medium",notes:"",pinned:false,startDate:"",dueDate:"",progress:45,jiraUrl:"",confluenceUrl:"",milestones:[]},
+  {id:12,name:"MBR Coordination",category:"Operations",status:"In Progress",priority:"High",notes:"",pinned:false,startDate:"",dueDate:"",progress:50,jiraUrl:"",confluenceUrl:"",milestones:[]},
+  {id:13,name:"New Hire Interviews (CX: Partner, Manager, PM)",category:"People & Hiring",status:"In Progress",priority:"High",notes:"",pinned:false,startDate:"",dueDate:"",progress:30,jiraUrl:"",confluenceUrl:"",milestones:[]},
+  {id:14,name:"Onboarding — New CX Roles",category:"People & Hiring",status:"Pending",priority:"Medium",notes:"",pinned:false,startDate:"",dueDate:"",progress:0,jiraUrl:"",confluenceUrl:"",milestones:[]},
+  {id:15,name:"Workable Maintenance (Time Off & Schedules)",category:"People & Hiring",status:"In Progress",priority:"Medium",notes:"",pinned:false,startDate:"",dueDate:"",progress:55,jiraUrl:"",confluenceUrl:"",milestones:[]},
+  {id:16,name:"Reporting Management via HEX (→ Diego)",category:"Reporting",status:"In Progress",priority:"High",notes:"",pinned:false,startDate:"",dueDate:"",progress:40,jiraUrl:"",confluenceUrl:"",milestones:[]},
+  {id:17,name:"Separation of CSAT from Tidio & Zendesk",category:"Reporting",status:"In Progress",priority:"Medium",notes:"",pinned:false,startDate:"",dueDate:"",progress:20,jiraUrl:"",confluenceUrl:"",milestones:[]},
+  {id:18,name:"Schedule Flexes (Supervisor → My Approval)",category:"Scheduling",status:"In Progress",priority:"Low",notes:"",pinned:false,startDate:"",dueDate:"",progress:80,jiraUrl:"",confluenceUrl:"",milestones:[]},
+  {id:19,name:"Scheduling URL Management",category:"Scheduling",status:"In Progress",priority:"Low",notes:"",pinned:false,startDate:"",dueDate:"",progress:60,jiraUrl:"",confluenceUrl:"",milestones:[]},
+  {id:20,name:"Jira Prioritization (w/ Abhishek)",category:"Operations",status:"In Progress",priority:"High",notes:"",pinned:false,startDate:"",dueDate:"",progress:50,jiraUrl:"",confluenceUrl:"",milestones:[]}
+];
+
+function load(){try{const s=localStorage.getItem("wt-tasks-v2");return s?JSON.parse(s):INITIAL_TASKS;}catch{return INITIAL_TASKS;}}
+function save(tasks){try{localStorage.setItem("wt-tasks-v2",JSON.stringify(tasks));}catch{}}
+
+function reducer(state,action){
+  let next;
+  switch(action.type){
+    case"UPDATE":next=state.map(t=>t.id===action.id?{...t,[action.field]:action.value}:t);break;
+    case"ADD_TASK":next=[...state,action.task];break;
+    case"DELETE_TASK":next=state.filter(t=>t.id!==action.id);break;
+    case"ADD_MILESTONE":next=state.map(t=>t.id===action.id?{...t,milestones:[...t.milestones,action.milestone]}:t);break;
+    case"UPDATE_MILESTONE":next=state.map(t=>t.id===action.id?{...t,milestones:t.milestones.map(m=>m.id===action.mid?{...m,[action.field]:action.value}:m)}:t);break;
+    case"DELETE_MILESTONE":next=state.map(t=>t.id===action.id?{...t,milestones:t.milestones.filter(m=>m.id!==action.mid)}:t);break;
+    case"RESET":next=INITIAL_TASKS;break;
+    default:return state;
+  }
+  save(next);
+  return next;
+}
+
+function App(){
+  const [tasks,dispatch]=useReducer(reducer,null,load);
+  const [view,setView]=useState("board");
+  const [filterCat,setFilterCat]=useState("All");
+  const [filterStatus,setFilterStatus]=useState("All");
+  const [search,setSearch]=useState("");
+  const [detailId,setDetailId]=useState(null);
+  const [showAdd,setShowAdd]=useState(false);
+  const [newTask,setNewTask]=useState({name:"",category:CATEGORIES[0],status:"Pending",priority:"Medium"});
+  const [saved,setSaved]=useState(false);
+
+  const filtered=tasks.filter(t=>(filterCat==="All"||t.category===filterCat)&&(filterStatus==="All"||t.status===filterStatus)&&t.name.toLowerCase().includes(search.toLowerCase())).sort((a,b)=>b.pinned-a.pinned);
+  const grouped=CATEGORIES.reduce((acc,c)=>{acc[c]=filtered.filter(t=>t.category===c);return acc;},{});
+  const detailTask=tasks.find(t=>t.id===detailId);
+
+  const addTask=()=>{
+    if(!newTask.name.trim())return;
+    dispatch({type:"ADD_TASK",task:{...newTask,id:Date.now(),notes:"",pinned:false,startDate:"",dueDate:"",progress:0,jiraUrl:"",confluenceUrl:"",milestones:[]}});
+    setNewTask({name:"",category:CATEGORIES[0],status:"Pending",priority:"Medium"});
+    setShowAdd(false);
+  };
+
+  // save indicator
+  const timerRef=useRef(null);
+  useEffect(()=>{
+    setSaved(true);
+    clearTimeout(timerRef.current);
+    timerRef.current=setTimeout(()=>setSaved(false),2000);
+  },[tasks]);
+
+  return(
+    <div className="min-h-screen bg-gray-50 text-sm">
+      <div className="bg-indigo-700 text-white px-6 py-4 flex items-center justify-between flex-wrap gap-3">
+        <div>
+          <h1 className="text-xl font-bold tracking-tight">My Work Tracker</h1>
+          <p className="text-indigo-200 text-xs mt-0.5">{tasks.length} projects · {tasks.filter(t=>t.status==="Complete").length} complete · {tasks.filter(t=>t.status==="Blocked").length} blocked
+            {saved&&<span className="ml-3 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">✓ Saved</span>}
+          </p>
+        </div>
+        <div className="flex gap-2 flex-wrap">
+          <button onClick={()=>setView(view==="board"?"list":"board")} className="bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded text-xs font-medium">{view==="board"?"📋 List":"🗂 Board"}</button>
+          <button onClick={()=>setShowAdd(true)} className="bg-white text-indigo-700 hover:bg-indigo-50 px-3 py-1.5 rounded text-xs font-bold">+ Add Project</button>
+        </div>
+      </div>
+
+      <div className="px-6 py-3 bg-white border-b flex flex-wrap gap-3 items-center">
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search..." className="border rounded px-3 py-1.5 text-sm w-44 focus:outline-none focus:ring-2 focus:ring-indigo-300"/>
+        <select value={filterCat} onChange={e=>setFilterCat(e.target.value)} className="border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+          <option value="All">All Categories</option>
+          {CATEGORIES.map(c=><option key={c}>{c}</option>)}
+        </select>
+        <select value={filterStatus} onChange={e=>setFilterStatus(e.target.value)} className="border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+          <option value="All">All Statuses</option>
+          {STATUS_OPTIONS.map(s=><option key={s}>{s}</option>)}
+        </select>
+        <div className="ml-auto flex gap-2 flex-wrap">
+          {STATUS_OPTIONS.map(s=><span key={s} className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[s]}`}>{tasks.filter(t=>t.status===s).length} {s}</span>)}
+        </div>
+      </div>
+
+      {showAdd&&(
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl p-6 w-96">
+            <h2 className="font-bold text-base mb-4">Add New Project</h2>
+            <input value={newTask.name} onChange={e=>setNewTask({...newTask,name:e.target.value})} placeholder="Project name..." className="w-full border rounded px-3 py-2 mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"/>
+            <select value={newTask.category} onChange={e=>setNewTask({...newTask,category:e.target.value})} className="w-full border rounded px-3 py-2 mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+              {CATEGORIES.map(c=><option key={c}>{c}</option>)}
+            </select>
+            <div className="flex gap-2 mb-4">
+              <select value={newTask.status} onChange={e=>setNewTask({...newTask,status:e.target.value})} className="flex-1 border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                {STATUS_OPTIONS.map(s=><option key={s}>{s}</option>)}
+              </select>
+              <select value={newTask.priority} onChange={e=>setNewTask({...newTask,priority:e.target.value})} className="flex-1 border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                {["High","Medium","Low"].map(p=><option key={p}>{p}</option>)}
+              </select>
+            </div>
+            <div className="flex gap-2 justify-end">
+              <button onClick={()=>setShowAdd(false)} className="px-4 py-2 text-sm rounded border hover:bg-gray-50">Cancel</button>
+              <button onClick={addTask} className="px-4 py-2 text-sm rounded bg-indigo-600 text-white hover:bg-indigo-700 font-medium">Add</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {detailTask&&<DetailPanel task={detailTask} dispatch={dispatch} onClose={()=>setDetailId(null)}/>}
+
+      <div className="p-6">
+        {view==="board"?(
+          <div className="space-y-8">
+            {CATEGORIES.map(cat=>{
+              const ct=grouped[cat];
+              if(!ct.length)return null;
+              return(
+                <div key={cat}>
+                  <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3 flex items-center gap-2">
+                    {cat}<span className="bg-gray-200 text-gray-600 px-1.5 py-0.5 rounded-full text-xs">{ct.length}</span>
+                  </h2>
+                  <div className="grid gap-3 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                    {ct.map(t=><ProjectCard key={t.id} task={t} dispatch={dispatch} onOpen={()=>setDetailId(t.id)}/>)}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ):(
+          <div className="bg-white rounded-xl border overflow-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                <tr>
+                  <th className="px-4 py-3 text-left">Project</th>
+                  <th className="px-4 py-3 text-left">Category</th>
+                  <th className="px-4 py-3 text-left">Priority</th>
+                  <th className="px-4 py-3 text-left">Status</th>
+                  <th className="px-4 py-3 text-left">Progress</th>
+                  <th className="px-4 py-3 text-left">Due</th>
+                  <th className="px-4 py-3 text-left">Links</th>
+                  <th className="px-4 py-3 text-left"></th>
+                </tr>
+              </thead>
+              <tbody>
+                {filtered.map((t,i)=>(
+                  <tr key={t.id} className={`border-t hover:bg-indigo-50 transition-colors ${i%2===0?"":"bg-gray-50"}`}>
+                    <td className="px-4 py-3 font-medium">{t.pinned&&"📌 "}{t.name}</td>
+                    <td className="px-4 py-3 text-gray-500 text-xs">{t.category}</td>
+                    <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${PRIORITY_COLORS[t.priority]}`}>{t.priority}</span></td>
+                    <td className="px-4 py-3">
+                      <select value={t.status} onChange={e=>dispatch({type:"UPDATE",id:t.id,field:"status",value:e.target.value})} className={`rounded px-2 py-0.5 text-xs font-medium border-0 cursor-pointer ${STATUS_COLORS[t.status]}`}>
+                        {STATUS_OPTIONS.map(s=><option key={s}>{s}</option>)}
+                      </select>
+                    </td>
+                    <td className="px-4 py-3 w-32">
+                      <div className="flex items-center gap-2">
+                        <div className="flex-1 bg-gray-100 rounded-full h-1.5">
+                          <div className={`h-1.5 rounded-full ${STATUS_BAR[t.status]}`} style={{width:`${t.progress}%`}}/>
+                        </div>
+                        <span className="text-xs text-gray-500 w-8">{t.progress}%</span>
+                      </div>
+                    </td>
+                    <td className="px-4 py-3 text-xs text-gray-500">{t.dueDate||<span className="text-gray-300">—</span>}</td>
+                    <td className="px-4 py-3">
+                      <div className="flex gap-2">
+                        {t.jiraUrl&&<a href={t.jiraUrl} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-700 text-xs font-medium">Jira</a>}
+                        {t.confluenceUrl&&<a href={t.confluenceUrl} target="_blank" rel="noreferrer" className="text-purple-500 hover:text-purple-700 text-xs font-medium">Confluence</a>}
+                      </div>
+                    </td>
+                    <td className="px-4 py-3">
+                      <button onClick={()=>setDetailId(t.id)} className="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Open →</button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ProjectCard({task:t,dispatch,onOpen}){
+  return(
+    <div onClick={onOpen} className={`bg-white rounded-xl border shadow-sm hover:shadow-md transition-all cursor-pointer group ${t.pinned?"border-amber-300":"border-gray-200"}`}>
+      <div className={`h-1 rounded-t-xl ${STATUS_BAR[t.status]}`}/>
+      <div className="p-4">
+        <div className="flex justify-between items-start gap-2 mb-2">
+          <p className="font-semibold text-gray-800 text-sm leading-snug flex-1 group-hover:text-indigo-700 transition-colors">{t.name}</p>
+          <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${PRIORITY_COLORS[t.priority]}`}>{t.priority}</span>
+        </div>
+        <div className="flex items-center gap-2 mb-3">
+          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[t.status]}`}>{t.status}</span>
+          {t.dueDate&&<span className="text-xs text-gray-400 ml-auto">Due {t.dueDate}</span>}
+        </div>
+        <div className="mb-1 flex items-center justify-between">
+          <span className="text-xs text-gray-400">Progress</span>
+          <span className="text-xs text-gray-500 font-medium">{t.progress}%</span>
+        </div>
+        <div className="bg-gray-100 rounded-full h-1.5">
+          <div className={`h-1.5 rounded-full transition-all ${STATUS_BAR[t.status]}`} style={{width:`${t.progress}%`}}/>
+        </div>
+        <div className="flex gap-2 mt-3 flex-wrap">
+          {t.jiraUrl&&<a href={t.jiraUrl} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} className="text-xs text-blue-500 hover:underline font-medium">🔗 Jira</a>}
+          {t.confluenceUrl&&<a href={t.confluenceUrl} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} className="text-xs text-purple-500 hover:underline font-medium">📄 Confluence</a>}
+          {t.milestones.length>0&&<span className="text-xs text-gray-400 ml-auto">{t.milestones.filter(m=>m.done).length}/{t.milestones.length} milestones</span>}
+        </div>
+        <p className="text-xs text-indigo-400 mt-3 group-hover:text-indigo-600 font-medium">Click to open →</p>
+      </div>
+    </div>
+  );
+}
+
+function DetailPanel({task:t,dispatch,onClose}){
+  const [newMs,setNewMs]=useState("");
+  const [newMsDate,setNewMsDate]=useState("");
+  const up=(field,value)=>dispatch({type:"UPDATE",id:t.id,field,value});
+  const addMilestone=()=>{
+    if(!newMs.trim())return;
+    dispatch({type:"ADD_MILESTONE",id:t.id,milestone:{id:Date.now(),label:newMs,date:newMsDate,done:false}});
+    setNewMs("");setNewMsDate("");
+  };
+  const daysRemaining=t.dueDate?Math.round((new Date(t.dueDate)-new Date())/86400000):null;
+  const totalDays=(t.startDate&&t.dueDate)?Math.round((new Date(t.dueDate)-new Date(t.startDate))/86400000):null;
+
+  return(
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end" onClick={onClose}>
+      <div className="bg-white w-full max-w-2xl h-full overflow-y-auto shadow-2xl" onClick={e=>e.stopPropagation()}>
+        <div className={`h-2 w-full ${STATUS_BAR[t.status]}`}/>
+        <div className="px-6 py-5 border-b flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <p className="text-xs text-gray-400 uppercase tracking-wider mb-1">{t.category}</p>
+            <h2 className="text-lg font-bold text-gray-900 leading-tight">{t.name}</h2>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-xl font-bold mt-1">✕</button>
+        </div>
+
+        <div className="px-6 py-5 space-y-6">
+          {/* Status / Priority / Progress */}
+          <div className="grid grid-cols-3 gap-3">
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Status</label>
+              <select value={t.status} onChange={e=>up("status",e.target.value)} className={`w-full rounded-lg px-3 py-2 text-sm font-medium border-0 cursor-pointer ${STATUS_COLORS[t.status]}`}>
+                {STATUS_OPTIONS.map(s=><option key={s}>{s}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Priority</label>
+              <select value={t.priority} onChange={e=>up("priority",e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
+                {["High","Medium","Low"].map(p=><option key={p}>{p}</option>)}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Progress</label>
+              <div className="flex items-center gap-2 mt-1">
+                <input type="range" min="0" max="100" value={t.progress} onChange={e=>up("progress",Number(e.target.value))} className="flex-1"/>
+                <span className="text-sm font-bold text-gray-600 w-10 text-right">{t.progress}%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Timeline */}
+          <div>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Timeline</label>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-gray-400 mb-1 block">Start Date</label>
+                <input type="date" value={t.startDate} onChange={e=>up("startDate",e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"/>
+              </div>
+              <div>
+                <label className="text-xs text-gray-400 mb-1 block">Due Date</label>
+                <input type="date" value={t.dueDate} onChange={e=>up("dueDate",e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"/>
+              </div>
+            </div>
+            {t.dueDate&&(
+              <div className={`mt-2 rounded-lg px-3 py-2 text-xs font-medium ${daysRemaining<0?"bg-red-50 text-red-700":daysRemaining<=7?"bg-orange-50 text-orange-700":"bg-indigo-50 text-indigo-700"}`}>
+                📅 {totalDays!=null?`${totalDays}-day window · `:""}{daysRemaining<0?`${Math.abs(daysRemaining)} days overdue`:daysRemaining===0?"Due today":`${daysRemaining} days remaining`}
+              </div>
+            )}
+          </div>
+
+          {/* Milestones */}
+          <div>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Milestones</label>
+            <div className="space-y-2 mb-3">
+              {t.milestones.length===0&&<p className="text-xs text-gray-300 italic">No milestones yet — add key checkpoints below.</p>}
+              {t.milestones.map(m=>(
+                <div key={m.id} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 group">
+                  <input type="checkbox" checked={m.done} onChange={e=>dispatch({type:"UPDATE_MILESTONE",id:t.id,mid:m.id,field:"done",value:e.target.checked})} className="w-4 h-4 shrink-0"/>
+                  <span className={`flex-1 text-sm ${m.done?"line-through text-gray-300":"text-gray-700"}`}>{m.label}</span>
+                  {m.date&&<span className="text-xs text-gray-400">{m.date}</span>}
+                  <button onClick={()=>dispatch({type:"DELETE_MILESTONE",id:t.id,mid:m.id})} className="text-gray-200 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity font-bold text-sm">✕</button>
+                </div>
+              ))}
+            </div>
+            <div className="flex gap-2">
+              <input value={newMs} onChange={e=>setNewMs(e.target.value)} onKeyDown={e=>e.key==="Enter"&&addMilestone()} placeholder="New milestone..." className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"/>
+              <input type="date" value={newMsDate} onChange={e=>setNewMsDate(e.target.value)} className="border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 w-36"/>
+              <button onClick={addMilestone} className="bg-indigo-600 text-white px-3 py-2 rounded-lg text-sm hover:bg-indigo-700 font-medium">+</button>
+            </div>
+          </div>
+
+          {/* Links */}
+          <div>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Links</label>
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <span className="text-blue-500 text-xs font-bold w-24 shrink-0">🔗 Jira</span>
+                <input value={t.jiraUrl} onChange={e=>up("jiraUrl",e.target.value)} placeholder="Paste Jira ticket URL..." className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"/>
+                {t.jiraUrl&&<a href={t.jiraUrl} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-700 text-xs font-medium shrink-0">Open ↗</a>}
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-purple-500 text-xs font-bold w-24 shrink-0">📄 Confluence</span>
+                <input value={t.confluenceUrl} onChange={e=>up("confluenceUrl",e.target.value)} placeholder="Paste Confluence page URL..." className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"/>
+                {t.confluenceUrl&&<a href={t.confluenceUrl} target="_blank" rel="noreferrer" className="text-purple-500 hover:text-purple-700 text-xs font-medium shrink-0">Open ↗</a>}
+              </div>
+            </div>
+          </div>
+
+          {/* Notes */}
+          <div>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Notes & Updates</label>
+            <textarea value={t.notes} onChange={e=>up("notes",e.target.value)} rows={5} placeholder="Jot down notes from impromptu meetings, blockers, context, next steps..." className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"/>
+          </div>
+
+          <div className="pt-2 border-t">
+            <button onClick={()=>{dispatch({type:"DELETE_TASK",id:t.id});onClose();}} className="text-xs text-red-400 hover:text-red-600 font-medium">Remove this project</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+ReactDOM.render(<App/>,document.getElementById("root"));
+</script>
+</body>
+</html>
