@@ -56,7 +56,9 @@ const INITIAL_TASKS=[
   {id:20,name:"Jira Prioritization (w/ Abhishek)",category:"Operations",status:"In Progress",priority:"High",ongoing:false,recurrence:"",lastUpdated:"",notes:"",pinned:false,startDate:"",dueDate:"",progress:50,jiraUrl:"",confluenceUrl:"",milestones:[]},
 ];
 
-function load(){try{const s=localStorage.getItem("wt-tasks-v3");return s?JSON.parse(s):INITIAL_TASKS;}catch{return INITIAL_TASKS;}}
+const SAVED_DATA=[{"id":101,"name":"Zendesk Maintenance","category":"Tooling & Quality","status":"In Progress","priority":"High","ongoing":true,"recurrence":"Weekly","lastUpdated":"3/4/2026","notes":"","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[{"id":1772657629917,"label":"Today it was reported that supervisors felt CSAT not working since BAD SAT has not come in for days - connections have all been checked","date":"","done":false}]},{"id":102,"name":"Workable Maintenance (Time Off & Schedules)","category":"People & Hiring","status":"In Progress","priority":"High","ongoing":true,"recurrence":"Weekly","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":103,"name":"ProHance Management","category":"Scheduling","status":"In Progress","priority":"High","ongoing":true,"recurrence":"Weekly","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":104,"name":"Scheduling URL Management","category":"Scheduling","status":"In Progress","priority":"Medium","ongoing":true,"recurrence":"As Needed","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":1,"name":"#help-me Channel Coaching Plan","category":"Operations","status":"In Progress","priority":"High","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":30,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":2,"name":"Zendesk Quality Application Review","category":"Tooling & Quality","status":"In Progress","priority":"High","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":40,"jiraUrl":"","confluenceUrl":"","milestones":[{"id":1772657492051,"label":"Escalated to Zendesk, I have not been able to enable Quality - the admin/owner needs to enable. software@jiffyshirts.com.","date":"2026-03-04","done":false}]},{"id":3,"name":"Zendesk Copilot Application Review","category":"Tooling & Quality","status":"In Progress","priority":"Medium","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":20,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":5,"name":"ProHance Schedule Adherence","category":"Scheduling","status":"In Progress","priority":"High","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":60,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":6,"name":"ProHance QBR","category":"Reporting","status":"Pending","priority":"Medium","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":7,"name":"Tidio Dispositions","category":"Tooling & Quality","status":"In Progress","priority":"Medium","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":35,"jiraUrl":"","confluenceUrl":"","milestones":[{"id":1772657975787,"label":"Request for Mandatory Field - ETA March 6","date":"2026-03-06","done":false}]},{"id":8,"name":"Tidio Notification Launch","category":"Tooling & Quality","status":"Pending","priority":"High","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"2026-03-02","dueDate":"","progress":10,"jiraUrl":"","confluenceUrl":"","milestones":[{"id":1772657952550,"label":"Request has been submitted to Douglas, ETA March 6","date":"2026-03-06","done":false}]},{"id":9,"name":"Tidio Automations & Knowledge","category":"Tooling & Quality","status":"In Progress","priority":"Medium","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":25,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":10,"name":"Contact Us Page Updates","category":"Operations","status":"In Progress","priority":"Low","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":70,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":11,"name":"Claims Tagging in Kata","category":"Tooling & Quality","status":"In Progress","priority":"Medium","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":45,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":12,"name":"MBR Coordination","category":"Operations","status":"In Progress","priority":"High","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":50,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":13,"name":"New Hire Interviews (CX: Partner, Manager, PM)","category":"People & Hiring","status":"In Progress","priority":"High","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":30,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":14,"name":"Onboarding — New CX Roles","category":"People & Hiring","status":"Pending","priority":"Medium","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":18,"name":"Schedule Flexes (Supervisor → My Approval)","category":"Scheduling","status":"In Progress","priority":"Low","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":80,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":20,"name":"Jira Prioritization (w/ Abhishek)","category":"Operations","status":"In Progress","priority":"High","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":50,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"name":"CSAT Split: Zendesk and Tidio","category":"Reporting","status":"In Progress","priority":"High","ongoing":false,"recurrence":"Weekly","id":1772657916205,"notes":"","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[],"lastUpdated":""}];
+
+function load(){try{const s=localStorage.getItem("wt-tasks-v3");if(s){const parsed=JSON.parse(s);if(parsed.length>0)return parsed;}return SAVED_DATA;}catch{return SAVED_DATA;}}
 function save(tasks){try{localStorage.setItem("wt-tasks-v3",JSON.stringify(tasks));}catch{}}
 
 function reducer(state,action){
@@ -108,12 +110,93 @@ function App(){
 
   const addTask=()=>{
     if(!newTask.name.trim())return;
-    dispatch({type:"ADD_TASK",task:{...newTask,id:Date.now(),notes:"",pinned:false,startDate:"",dueDate:"",progress:0,jiraUrl:"",confluenceUrl:"",milestones:[],lastUpdated:""}});
+    const isOngoing=newTask.ongoing===true;
+    dispatch({type:"ADD_TASK",task:{
+      ...newTask,
+      ongoing:isOngoing,
+      id:Date.now(),
+      notes:"",
+      pinned:false,
+      startDate:"",
+      dueDate:"",
+      progress:0,
+      jiraUrl:"",
+      confluenceUrl:"",
+      milestones:[],
+      lastUpdated:""
+    }});
     setNewTask({name:"",category:CATEGORIES[0],status:"In Progress",priority:"Medium",ongoing:false,recurrence:"Weekly"});
     setShowAdd(false);
   };
 
-  const ongoingCats=[...new Set(ongoingTasks.map(t=>t.category))];
+  // ── Slack digest ──
+  const [showDigest,setShowDigest]=useState(false);
+  const [webhookUrl,setWebhookUrl]=useState(()=>localStorage.getItem("wt-slack-webhook")||"");
+  const [webhookInput,setWebhookInput]=useState("");
+  const [showWebhookSetup,setShowWebhookSetup]=useState(false);
+  const [slackSent,setSlackSent]=useState(false);
+  const [slackError,setSlackError]=useState("");
+
+  const today=new Date();
+  const fmt=d=>d?new Date(d).toLocaleDateString("en-US",{month:"short",day:"numeric"}):"";
+  const daysSince=d=>d?Math.round((today-new Date(d))/86400000):999;
+  const daysUntil=d=>d?Math.round((new Date(d)-today)/86400000):null;
+
+  const overdueCheckIns=tasks.filter(t=>t.ongoing&&daysSince(t.lastUpdated)>=7);
+  const upcomingDue=tasks.filter(t=>!t.ongoing&&t.dueDate&&daysUntil(t.dueDate)!==null&&daysUntil(t.dueDate)<=7&&daysUntil(t.dueDate)>=0);
+  const overdueDue=tasks.filter(t=>!t.ongoing&&t.dueDate&&daysUntil(t.dueDate)<0);
+  const blocked=tasks.filter(t=>t.status==="Blocked");
+
+  const buildDigest=()=>{
+    const lines=[];
+    lines.push(`*📋 Work Tracker Digest — ${today.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}*`);
+    lines.push("");
+    if(overdueCheckIns.length){
+      lines.push("*🔄 Ongoing — Check-in Overdue (7+ days)*");
+      overdueCheckIns.forEach(t=>lines.push(`• ${t.name} — last checked in: ${t.lastUpdated||"never"}`));
+      lines.push("");
+    }
+    if(overdueDue.length){
+      lines.push("*🚨 Overdue Projects*");
+      overdueDue.forEach(t=>lines.push(`• ${t.name} — was due ${fmt(t.dueDate)} (${Math.abs(daysUntil(t.dueDate))}d ago)`));
+      lines.push("");
+    }
+    if(upcomingDue.length){
+      lines.push("*⏰ Due Within 7 Days*");
+      upcomingDue.forEach(t=>lines.push(`• ${t.name} — due ${fmt(t.dueDate)} (${daysUntil(t.dueDate)}d)`));
+      lines.push("");
+    }
+    if(blocked.length){
+      lines.push("*🔴 Blocked*");
+      blocked.forEach(t=>lines.push(`• ${t.name}`));
+      lines.push("");
+    }
+    lines.push("*📊 Full Status Summary*");
+    ["In Progress","Pending","Blocked","On Hold","Complete"].forEach(s=>{
+      const count=tasks.filter(t=>t.status===s).length;
+      if(count) lines.push(`• ${s}: ${count}`);
+    });
+    lines.push("");
+    lines.push(`_${tasks.filter(t=>t.ongoing).length} ongoing · ${tasks.filter(t=>!t.ongoing).length} projects · ${tasks.filter(t=>t.status==="Complete").length} complete_`);
+    return lines.join("\n");
+  };
+
+  const saveWebhook=()=>{
+    localStorage.setItem("wt-slack-webhook",webhookInput);
+    setWebhookUrl(webhookInput);
+    setWebhookInput("");
+    setShowWebhookSetup(false);
+  };
+
+  const sendToSlack=async()=>{
+    if(!webhookUrl){setShowWebhookSetup(true);return;}
+    setSlackError("");
+    try{
+      await fetch(webhookUrl,{method:"POST",body:JSON.stringify({text:buildDigest()})});
+      setSlackSent(true);
+      setTimeout(()=>setSlackSent(false),3000);
+    }catch(e){setSlackError("Could not send — check your webhook URL.");}
+  };
 
   return(
     <div className="min-h-screen bg-gray-50 text-sm">
@@ -128,6 +211,7 @@ function App(){
         </div>
         <div className="flex gap-2 flex-wrap">
           <button onClick={()=>setView(view==="board"?"list":"board")} className="bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded text-xs font-medium">{view==="board"?"📋 List":"🗂 Board"}</button>
+          <button onClick={()=>setShowDigest(true)} className="bg-indigo-500 hover:bg-indigo-400 px-3 py-1.5 rounded text-xs font-medium">📣 Slack Digest</button>
           <button onClick={()=>setShowAdd(true)} className="bg-white text-indigo-700 hover:bg-indigo-50 px-3 py-1.5 rounded text-xs font-bold">+ Add</button>
         </div>
       </div>
@@ -172,10 +256,10 @@ function App(){
             </div>
             {/* Type toggle */}
             <div className="flex rounded-lg border overflow-hidden mb-3">
-              <button onClick={()=>setNewTask({...newTask,ongoing:false})} className={`flex-1 py-2 text-sm font-medium transition-colors ${!newTask.ongoing?"bg-indigo-600 text-white":"bg-white text-gray-600 hover:bg-gray-50"}`}>📋 Project</button>
-              <button onClick={()=>setNewTask({...newTask,ongoing:true})} className={`flex-1 py-2 text-sm font-medium transition-colors ${newTask.ongoing?"bg-teal-600 text-white":"bg-white text-gray-600 hover:bg-gray-50"}`}>🔄 Ongoing</button>
+              <button type="button" onClick={()=>setNewTask(prev=>({...prev,ongoing:false}))} className={`flex-1 py-2 text-sm font-medium transition-colors ${newTask.ongoing===false?"bg-indigo-600 text-white":"bg-white text-gray-600 hover:bg-gray-50"}`}>📋 Project</button>
+              <button type="button" onClick={()=>setNewTask(prev=>({...prev,ongoing:true}))} className={`flex-1 py-2 text-sm font-medium transition-colors ${newTask.ongoing===true?"bg-teal-600 text-white":"bg-white text-gray-600 hover:bg-gray-50"}`}>🔄 Ongoing</button>
             </div>
-            {newTask.ongoing&&(
+            {newTask.ongoing===true&&(
               <select value={newTask.recurrence} onChange={e=>setNewTask({...newTask,recurrence:e.target.value})} className="w-full border rounded px-3 py-2 mb-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
                 {RECURRENCE.map(r=><option key={r}>{r}</option>)}
               </select>
@@ -189,6 +273,74 @@ function App(){
       )}
 
       {detailTask&&<DetailPanel task={detailTask} dispatch={dispatch} onClose={()=>setDetailId(null)}/>}
+
+      {/* Slack Digest Modal */}
+      {showDigest&&(
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-screen overflow-y-auto">
+            <div className="px-6 py-4 border-b flex items-center justify-between">
+              <div>
+                <h2 className="font-bold text-base">📣 Slack Digest</h2>
+                <p className="text-xs text-gray-400 mt-0.5">Send your daily/weekly summary to Slack</p>
+              </div>
+              <button onClick={()=>{setShowDigest(false);setSlackError("");}} className="text-gray-400 hover:text-gray-700 text-xl font-bold">✕</button>
+            </div>
+            <div className="px-6 py-4 space-y-4">
+              {/* Alert badges */}
+              <div className="flex flex-wrap gap-2">
+                {overdueCheckIns.length>0&&<span className="bg-orange-100 text-orange-700 text-xs px-3 py-1 rounded-full font-medium">🔄 {overdueCheckIns.length} check-in{overdueCheckIns.length>1?"s":""} overdue</span>}
+                {overdueDue.length>0&&<span className="bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full font-medium">🚨 {overdueDue.length} project{overdueDue.length>1?"s":""} overdue</span>}
+                {upcomingDue.length>0&&<span className="bg-yellow-100 text-yellow-700 text-xs px-3 py-1 rounded-full font-medium">⏰ {upcomingDue.length} due soon</span>}
+                {blocked.length>0&&<span className="bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full font-medium">🔴 {blocked.length} blocked</span>}
+                {overdueCheckIns.length===0&&overdueDue.length===0&&upcomingDue.length===0&&blocked.length===0&&<span className="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-medium">✅ All clear!</span>}
+              </div>
+
+              {/* Preview */}
+              <div>
+                <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Message Preview</label>
+                <pre className="bg-gray-50 border rounded-xl px-4 py-3 text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed max-h-64 overflow-y-auto">{buildDigest()}</pre>
+              </div>
+
+              {/* Webhook setup */}
+              {showWebhookSetup?(
+                <div className="bg-indigo-50 rounded-xl p-4 space-y-3">
+                  <p className="text-xs font-semibold text-indigo-800">Set up Slack Webhook</p>
+                  <ol className="text-xs text-indigo-700 space-y-1 list-decimal list-inside">
+                    <li>Go to <a href="https://api.slack.com/apps" target="_blank" rel="noreferrer" className="underline font-medium">api.slack.com/apps</a> → Create New App → From Scratch</li>
+                    <li>Add feature: <strong>Incoming Webhooks</strong> → Activate</li>
+                    <li>Click "Add New Webhook to Workspace" → pick a channel (your DMs work!)</li>
+                    <li>Copy the webhook URL and paste below</li>
+                  </ol>
+                  <input value={webhookInput} onChange={e=>setWebhookInput(e.target.value)} placeholder="https://hooks.slack.com/services/..." className="w-full border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-300"/>
+                  <div className="flex gap-2">
+                    <button onClick={saveWebhook} disabled={!webhookInput} className="bg-indigo-600 text-white text-xs px-4 py-2 rounded-lg hover:bg-indigo-700 disabled:opacity-40 font-medium">Save Webhook</button>
+                    <button onClick={()=>setShowWebhookSetup(false)} className="text-xs border px-4 py-2 rounded-lg hover:bg-gray-50">Cancel</button>
+                  </div>
+                </div>
+              ):(
+                <div className="flex items-center gap-2">
+                  {webhookUrl&&<p className="text-xs text-green-600 font-medium flex-1">✓ Webhook configured</p>}
+                  {!webhookUrl&&<p className="text-xs text-gray-400 flex-1">No webhook set — send manually or configure below</p>}
+                  <button onClick={()=>setShowWebhookSetup(true)} className="text-xs text-indigo-500 hover:text-indigo-700 underline shrink-0">{webhookUrl?"Change webhook":"Set up webhook"}</button>
+                </div>
+              )}
+
+              {slackError&&<p className="text-xs text-red-500 font-medium">{slackError}</p>}
+
+              {/* Action buttons */}
+              <div className="flex gap-2 pt-1">
+                <button onClick={sendToSlack} className={`flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-colors ${slackSent?"bg-green-500":"bg-indigo-600 hover:bg-indigo-700"}`}>
+                  {slackSent?"✓ Sent to Slack!":"Send to Slack"}
+                </button>
+                <button onClick={()=>{navigator.clipboard.writeText(buildDigest());}} className="flex-1 py-2.5 rounded-xl text-sm font-medium border hover:bg-gray-50">
+                  📋 Copy to Clipboard
+                </button>
+              </div>
+              <p className="text-xs text-gray-400 text-center">Tip: bookmark the tracker and open it each morning as your standup prep</p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="p-6 space-y-10">
 
