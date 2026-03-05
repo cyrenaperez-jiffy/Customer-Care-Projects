@@ -16,6 +16,8 @@
   ::-webkit-scrollbar{width:6px}
   ::-webkit-scrollbar-track{background:#f1f5f9}
   ::-webkit-scrollbar-thumb{background:#c7d2fe;border-radius:3px}
+  .sort-btn{cursor:pointer;user-select:none;white-space:nowrap}
+  .sort-btn:hover{color:#4f46e5}
 </style>
 </head>
 <body class="bg-gray-50">
@@ -27,38 +29,19 @@ const STATUS_OPTIONS=["In Progress","Pending","Blocked","Complete","On Hold"];
 const STATUS_COLORS={"In Progress":"bg-blue-100 text-blue-800","Pending":"bg-yellow-100 text-yellow-800","Blocked":"bg-red-100 text-red-800","Complete":"bg-green-100 text-green-800","On Hold":"bg-gray-100 text-gray-700"};
 const STATUS_BAR={"In Progress":"bg-blue-400","Pending":"bg-yellow-400","Blocked":"bg-red-400","Complete":"bg-green-400","On Hold":"bg-gray-400"};
 const PRIORITY_COLORS={"High":"bg-red-50 text-red-700 border border-red-200","Medium":"bg-orange-50 text-orange-700 border border-orange-200","Low":"bg-gray-50 text-gray-600 border border-gray-200"};
+const PRIORITY_ORDER={"High":0,"Medium":1,"Low":2};
 const CATEGORIES=["Tooling & Quality","Reporting","People & Hiring","Scheduling","Operations"];
 const RECURRENCE=["Daily","Weekly","Bi-weekly","Monthly","As Needed"];
+const TOOLS=["Zendesk","Tidio","Kata","ProHance","Workable","HEX","Jira"];
 
-const INITIAL_TASKS=[
-  // ONGOING
-  {id:101,name:"Zendesk Maintenance",category:"Tooling & Quality",status:"In Progress",priority:"High",ongoing:true,recurrence:"Weekly",lastUpdated:"",notes:"",pinned:false,startDate:"",dueDate:"",progress:0,jiraUrl:"",confluenceUrl:"",milestones:[]},
-  {id:102,name:"Workable Maintenance (Time Off & Schedules)",category:"People & Hiring",status:"In Progress",priority:"High",ongoing:true,recurrence:"Weekly",lastUpdated:"",notes:"",pinned:false,startDate:"",dueDate:"",progress:0,jiraUrl:"",confluenceUrl:"",milestones:[]},
-  {id:103,name:"ProHance Management",category:"Scheduling",status:"In Progress",priority:"High",ongoing:true,recurrence:"Weekly",lastUpdated:"",notes:"",pinned:false,startDate:"",dueDate:"",progress:0,jiraUrl:"",confluenceUrl:"",milestones:[]},
-  {id:104,name:"Scheduling URL Management",category:"Scheduling",status:"In Progress",priority:"Medium",ongoing:true,recurrence:"As Needed",lastUpdated:"",notes:"",pinned:false,startDate:"",dueDate:"",progress:0,jiraUrl:"",confluenceUrl:"",milestones:[]},
-  // PROJECTS
-  {id:1,name:"#help-me Channel Coaching Plan",category:"Operations",status:"In Progress",priority:"High",ongoing:false,recurrence:"",lastUpdated:"",notes:"",pinned:false,startDate:"",dueDate:"",progress:30,jiraUrl:"",confluenceUrl:"",milestones:[]},
-  {id:2,name:"Zendesk Quality Application Review",category:"Tooling & Quality",status:"In Progress",priority:"High",ongoing:false,recurrence:"",lastUpdated:"",notes:"",pinned:false,startDate:"",dueDate:"",progress:40,jiraUrl:"",confluenceUrl:"",milestones:[]},
-  {id:3,name:"Zendesk Copilot Application Review",category:"Tooling & Quality",status:"In Progress",priority:"Medium",ongoing:false,recurrence:"",lastUpdated:"",notes:"",pinned:false,startDate:"",dueDate:"",progress:20,jiraUrl:"",confluenceUrl:"",milestones:[]},
-  {id:5,name:"ProHance Schedule Adherence",category:"Scheduling",status:"In Progress",priority:"High",ongoing:false,recurrence:"",lastUpdated:"",notes:"",pinned:false,startDate:"",dueDate:"",progress:60,jiraUrl:"",confluenceUrl:"",milestones:[]},
-  {id:6,name:"ProHance QBR",category:"Reporting",status:"Pending",priority:"Medium",ongoing:false,recurrence:"",lastUpdated:"",notes:"",pinned:false,startDate:"",dueDate:"",progress:0,jiraUrl:"",confluenceUrl:"",milestones:[]},
-  {id:7,name:"Tidio Dispositions",category:"Tooling & Quality",status:"In Progress",priority:"Medium",ongoing:false,recurrence:"",lastUpdated:"",notes:"",pinned:false,startDate:"",dueDate:"",progress:35,jiraUrl:"",confluenceUrl:"",milestones:[]},
-  {id:8,name:"Tidio Notification Launch",category:"Tooling & Quality",status:"Pending",priority:"High",ongoing:false,recurrence:"",lastUpdated:"",notes:"",pinned:false,startDate:"",dueDate:"",progress:10,jiraUrl:"",confluenceUrl:"",milestones:[]},
-  {id:9,name:"Tidio Automations & Knowledge",category:"Tooling & Quality",status:"In Progress",priority:"Medium",ongoing:false,recurrence:"",lastUpdated:"",notes:"",pinned:false,startDate:"",dueDate:"",progress:25,jiraUrl:"",confluenceUrl:"",milestones:[]},
-  {id:10,name:"Contact Us Page Updates",category:"Operations",status:"In Progress",priority:"Low",ongoing:false,recurrence:"",lastUpdated:"",notes:"",pinned:false,startDate:"",dueDate:"",progress:70,jiraUrl:"",confluenceUrl:"",milestones:[]},
-  {id:11,name:"Claims Tagging in Kata",category:"Tooling & Quality",status:"In Progress",priority:"Medium",ongoing:false,recurrence:"",lastUpdated:"",notes:"",pinned:false,startDate:"",dueDate:"",progress:45,jiraUrl:"",confluenceUrl:"",milestones:[]},
-  {id:12,name:"MBR Coordination",category:"Operations",status:"In Progress",priority:"High",ongoing:false,recurrence:"",lastUpdated:"",notes:"",pinned:false,startDate:"",dueDate:"",progress:50,jiraUrl:"",confluenceUrl:"",milestones:[]},
-  {id:13,name:"New Hire Interviews (CX: Partner, Manager, PM)",category:"People & Hiring",status:"In Progress",priority:"High",ongoing:false,recurrence:"",lastUpdated:"",notes:"",pinned:false,startDate:"",dueDate:"",progress:30,jiraUrl:"",confluenceUrl:"",milestones:[]},
-  {id:14,name:"Onboarding — New CX Roles",category:"People & Hiring",status:"Pending",priority:"Medium",ongoing:false,recurrence:"",lastUpdated:"",notes:"",pinned:false,startDate:"",dueDate:"",progress:0,jiraUrl:"",confluenceUrl:"",milestones:[]},
-  {id:16,name:"Reporting Management via HEX (→ Diego)",category:"Reporting",status:"In Progress",priority:"High",ongoing:false,recurrence:"",lastUpdated:"",notes:"",pinned:false,startDate:"",dueDate:"",progress:40,jiraUrl:"",confluenceUrl:"",milestones:[]},
-  {id:17,name:"Separation of CSAT from Tidio & Zendesk",category:"Reporting",status:"In Progress",priority:"Medium",ongoing:false,recurrence:"",lastUpdated:"",notes:"",pinned:false,startDate:"",dueDate:"",progress:20,jiraUrl:"",confluenceUrl:"",milestones:[]},
-  {id:18,name:"Schedule Flexes (Supervisor → My Approval)",category:"Scheduling",status:"In Progress",priority:"Low",ongoing:false,recurrence:"",lastUpdated:"",notes:"",pinned:false,startDate:"",dueDate:"",progress:80,jiraUrl:"",confluenceUrl:"",milestones:[]},
-  {id:20,name:"Jira Prioritization (w/ Abhishek)",category:"Operations",status:"In Progress",priority:"High",ongoing:false,recurrence:"",lastUpdated:"",notes:"",pinned:false,startDate:"",dueDate:"",progress:50,jiraUrl:"",confluenceUrl:"",milestones:[]},
-];
+// Detect which tool(s) a task name mentions
+function detectTools(name){
+  return TOOLS.filter(t=>name.toLowerCase().includes(t.toLowerCase()));
+}
 
-const SAVED_DATA=[{"id":101,"name":"Zendesk Maintenance","category":"Tooling & Quality","status":"In Progress","priority":"High","ongoing":true,"recurrence":"Weekly","lastUpdated":"3/4/2026","notes":"","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[{"id":1772657629917,"label":"Today it was reported that supervisors felt CSAT not working since BAD SAT has not come in for days - connections have all been checked","date":"","done":false}]},{"id":102,"name":"Workable Maintenance (Time Off & Schedules)","category":"People & Hiring","status":"In Progress","priority":"High","ongoing":true,"recurrence":"Weekly","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":103,"name":"ProHance Management","category":"Scheduling","status":"In Progress","priority":"High","ongoing":true,"recurrence":"Weekly","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":104,"name":"Scheduling URL Management","category":"Scheduling","status":"In Progress","priority":"Medium","ongoing":true,"recurrence":"Daily","lastUpdated":"3/4/2026","notes":"","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":1,"name":"#help-me Channel Coaching Plan","category":"Operations","status":"In Progress","priority":"High","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"2026-03-02","dueDate":"","progress":30,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":2,"name":"Zendesk Quality Application Review","category":"Tooling & Quality","status":"In Progress","priority":"High","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":40,"jiraUrl":"","confluenceUrl":"","milestones":[{"id":1772657492051,"label":"Escalated to Zendesk, I have not been able to enable Quality - the admin/owner needs to enable. software@jiffyshirts.com.","date":"2026-03-04","done":false}]},{"id":3,"name":"Zendesk Copilot Application Review","category":"Tooling & Quality","status":"In Progress","priority":"Medium","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":20,"jiraUrl":"","confluenceUrl":"","milestones":[{"id":1772665765921,"label":"Call Scheduled for March 5 @ 3 pm","date":"2026-03-05","done":false}]},{"id":5,"name":"ProHance Schedule Adherence","category":"Scheduling","status":"In Progress","priority":"High","ongoing":false,"recurrence":"","lastUpdated":"","notes":"ProHance Schedule Attendance Live - Count of Leave Early/Late but We track Productive Hours, not Logged Hours. Will address in the QBR","pinned":false,"startDate":"2026-02-16","dueDate":"","progress":60,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":6,"name":"ProHance QBR","category":"Reporting","status":"Pending","priority":"Medium","ongoing":false,"recurrence":"","lastUpdated":"","notes":"Requested for Supervisor Feedback prior to the meeting","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"https://dekeo.atlassian.net/wiki/spaces/JCCP/pages/4045111297/ProHance+Site+Visit?atl_aip=eyJpZCI6ImNmYmVjMmFiLWNlMzEtY2I3ZC0xZTYxLTFhZWM0ZjdiNDI1ZiIsImZuIjoiYWlTbmlwcGV0Iiwic291cmNlIjoiZW1haWwifQ&atl_p=eyJpIjoiMzYyZjBkNTQtMjg3Zi03ODNiLTkwYWUtOTc2YTYwODNmNDVlIiwidCI6ImZvbGxvd2luZ0ZlZWRFbnRyeSIsInNvdXJjZSI6ImVtYWlsIiwiZSI6ImNjLW5vdGlmaWNhdGlvbnNfZm9sbG93aW5nX2ZlZWQiLCJmYyI6IkZPTExPV0lORyIsImZyIjoxfQ","milestones":[{"id":1772662649503,"label":"Emailed ProHance Team Confirming Time and Attendees. + Agenda","date":"2026-03-04","done":false}]},{"id":7,"name":"Tidio Dispositions","category":"Tooling & Quality","status":"Blocked","priority":"Medium","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":35,"jiraUrl":"","confluenceUrl":"","milestones":[{"id":1772657975787,"label":"Request for Mandatory Field - ETA March 6","date":"2026-03-06","done":false}]},{"id":8,"name":"Tidio Notification Launch","category":"Tooling & Quality","status":"Pending","priority":"High","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"2026-03-02","dueDate":"","progress":10,"jiraUrl":"","confluenceUrl":"","milestones":[{"id":1772657952550,"label":"Request has been submitted to Douglas, ETA March 6","date":"2026-03-06","done":false}]},{"id":9,"name":"Tidio Automations & Knowledge","category":"Tooling & Quality","status":"In Progress","priority":"Medium","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":25,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":10,"name":"Contact Us Page Updates","category":"Operations","status":"On Hold","priority":"Low","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":70,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":11,"name":"Claims Tagging in Kata","category":"Tooling & Quality","status":"On Hold","priority":"Medium","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":45,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":12,"name":"MBR Coordination","category":"Operations","status":"In Progress","priority":"High","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":50,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":13,"name":"New Hire Interviews (CX: Partner, Manager, PM)","category":"People & Hiring","status":"In Progress","priority":"High","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":30,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":14,"name":"Onboarding — New CX Roles","category":"People & Hiring","status":"In Progress","priority":"Medium","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[{"id":1772662126794,"label":"March 9 Class: Pending Darrin Signature","date":"2026-03-05","done":false}]},{"id":18,"name":"Schedule Flexes (Supervisor -> My Approval)","category":"Scheduling","status":"In Progress","priority":"Low","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":80,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":20,"name":"Jira Prioritization (w/ Abhishek)","category":"Operations","status":"In Progress","priority":"High","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":50,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"name":"CSAT Split: Zendesk and Tidio","category":"Reporting","status":"In Progress","priority":"High","ongoing":false,"recurrence":"Weekly","id":1772657916205,"notes":"","pinned":false,"startDate":"2026-03-03","dueDate":"","progress":0,"jiraUrl":"https://dekeo.atlassian.net/browse/DATA-1830?atlOrigin=eyJpIjoiNGNiZDcxMWM0OWVjNDQ2NWIzZTc2YWI3NTI1OTIyMTEiLCJwIjoiamlyYS1zbGFjay1pbnQifQ","confluenceUrl":"","milestones":[{"id":1772662686448,"label":"Ticket has been submitted to Diego","date":"2026-03-04","done":false}],"lastUpdated":""},{"name":"HEX Reporting Management","category":"Reporting","status":"In Progress","priority":"Medium","ongoing":true,"recurrence":"As Needed","id":1772660504248,"notes":"","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[],"lastUpdated":""},{"name":"Tidio: Max 2 Concurrent Chats in Round Robin","category":"Tooling & Quality","status":"In Progress","priority":"High","ongoing":false,"recurrence":"Weekly","id":1772665052596,"notes":"Escalated to Tidio via Slack","pinned":false,"startDate":"2026-03-04","dueDate":"2026-03-05","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[],"lastUpdated":""},{"name":"Tidio: First Response Time","category":"Tooling & Quality","status":"In Progress","priority":"High","ongoing":false,"recurrence":"Weekly","id":1772730903892,"notes":"","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[],"lastUpdated":""}];
+const SAVED_DATA=[{"id":101,"name":"Zendesk Maintenance","category":"Tooling & Quality","status":"In Progress","priority":"High","ongoing":true,"recurrence":"Weekly","lastUpdated":"3/5/2026","notes":"","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[{"id":1772657629917,"label":"Today it was reported that supervisors felt CSAT not working since BAD SAT has not come in for days - connections have all been checked","date":"","done":false}]},{"id":102,"name":"Workable Maintenance (Time Off & Schedules)","category":"People & Hiring","status":"In Progress","priority":"High","ongoing":true,"recurrence":"Weekly","lastUpdated":"3/5/2026","notes":"","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":103,"name":"ProHance Management","category":"Scheduling","status":"In Progress","priority":"High","ongoing":true,"recurrence":"Weekly","lastUpdated":"3/5/2026","notes":"","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":104,"name":"Scheduling URL Management","category":"Scheduling","status":"In Progress","priority":"Medium","ongoing":true,"recurrence":"Daily","lastUpdated":"3/4/2026","notes":"","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":1,"name":"#help-me Channel Coaching Plan","category":"Operations","status":"In Progress","priority":"High","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"2026-03-02","dueDate":"","progress":30,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":2,"name":"Zendesk Quality Application Review","category":"Tooling & Quality","status":"In Progress","priority":"High","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":40,"jiraUrl":"","confluenceUrl":"","milestones":[{"id":1772657492051,"label":"Escalated to Zendesk, I have not been able to enable Quality - the admin/owner needs to enable. software@jiffyshirts.com.","date":"2026-03-04","done":false}]},{"id":3,"name":"Zendesk Copilot Application Review","category":"Tooling & Quality","status":"In Progress","priority":"Medium","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":20,"jiraUrl":"","confluenceUrl":"","milestones":[{"id":1772665765921,"label":"Call Scheduled for March 5 @ 3 pm","date":"2026-03-05","done":false}]},{"id":5,"name":"ProHance Schedule Adherence","category":"Scheduling","status":"In Progress","priority":"High","ongoing":false,"recurrence":"","lastUpdated":"","notes":"ProHance Schedule Attendance Live - Count of Leave Early/Late but We track Productive Hours, not Logged Hours. Will address in the QBR","pinned":false,"startDate":"2026-02-16","dueDate":"","progress":60,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":6,"name":"ProHance QBR","category":"Reporting","status":"Pending","priority":"Medium","ongoing":false,"recurrence":"","lastUpdated":"","notes":"Requested for Supervisor Feedback prior to the meeting","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"https://dekeo.atlassian.net/wiki/spaces/JCCP/pages/4045111297/ProHance+Site+Visit?atl_aip=eyJpZCI6ImNmYmVjMmFiLWNlMzEtY2I3ZC0xZTYxLTFhZWM0ZjdiNDI1ZiIsImZuIjoiYWlTbmlwcGV0Iiwic291cmNlIjoiZW1haWwifQ&atl_p=eyJpIjoiMzYyZjBkNTQtMjg3Zi03ODNiLTkwYWUtOTc2YTYwODNmNDVlIiwidCI6ImZvbGxvd2luZ0ZlZWRFbnRyeSIsInNvdXJjZSI6ImVtYWlsIiwiZSI6ImNjLW5vdGlmaWNhdGlvbnNfZm9sbG93aW5nX2ZlZWQiLCJmYyI6IkZPTExPV0lORyIsImZyIjoxfQ","milestones":[{"id":1772662649503,"label":"Emailed ProHance Team Confirming Time and Attendees. + Agenda","date":"2026-03-04","done":false}]},{"id":7,"name":"Tidio Dispositions","category":"Tooling & Quality","status":"Blocked","priority":"Medium","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":35,"jiraUrl":"","confluenceUrl":"","milestones":[{"id":1772657975787,"label":"Request for Mandatory Field - ETA March 6","date":"2026-03-06","done":false}]},{"id":8,"name":"Tidio Notification Launch","category":"Tooling & Quality","status":"Pending","priority":"High","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"2026-03-02","dueDate":"","progress":10,"jiraUrl":"","confluenceUrl":"","milestones":[{"id":1772657952550,"label":"Request has been submitted to Douglas, ETA March 6","date":"2026-03-06","done":false}]},{"id":9,"name":"Tidio Automations & Knowledge","category":"Tooling & Quality","status":"In Progress","priority":"Medium","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":25,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":10,"name":"Contact Us Page Updates","category":"Operations","status":"On Hold","priority":"Low","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":70,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":11,"name":"Claims Tagging in Kata","category":"Tooling & Quality","status":"On Hold","priority":"Medium","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":45,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":12,"name":"MBR Coordination","category":"Operations","status":"In Progress","priority":"High","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":50,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":13,"name":"New Hire Interviews (CX: Partner, Manager, PM)","category":"People & Hiring","status":"In Progress","priority":"High","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":30,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":14,"name":"Onboarding — New CX Roles","category":"People & Hiring","status":"In Progress","priority":"Medium","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[{"id":1772662126794,"label":"March 9 Class: Pending Darrin Signature","date":"2026-03-05","done":false}]},{"id":18,"name":"Schedule Flexes (Supervisor -> My Approval)","category":"Scheduling","status":"In Progress","priority":"Low","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":80,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"id":20,"name":"Jira Prioritization (w/ Abhishek)","category":"Operations","status":"In Progress","priority":"High","ongoing":false,"recurrence":"","lastUpdated":"","notes":"","pinned":false,"startDate":"","dueDate":"","progress":50,"jiraUrl":"","confluenceUrl":"","milestones":[]},{"name":"CSAT Split: Zendesk and Tidio","category":"Reporting","status":"In Progress","priority":"High","ongoing":false,"recurrence":"Weekly","id":1772657916205,"notes":"","pinned":false,"startDate":"2026-03-03","dueDate":"","progress":0,"jiraUrl":"https://dekeo.atlassian.net/browse/DATA-1830?atlOrigin=eyJpIjoiNGNiZDcxMWM0OWVjNDQ2NWIzZTc2YWI3NTI1OTIyMTEiLCJwIjoiamlyYS1zbGFjay1pbnQifQ","confluenceUrl":"","milestones":[{"id":1772662686448,"label":"Ticket has been submitted to Diego","date":"2026-03-04","done":false}],"lastUpdated":""},{"name":"HEX Reporting Management","category":"Reporting","status":"In Progress","priority":"Medium","ongoing":true,"recurrence":"As Needed","id":1772660504248,"notes":"","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[],"lastUpdated":"3/5/2026"},{"name":"Tidio: Max 2 Concurrent Chats in Round Robin","category":"Tooling & Quality","status":"In Progress","priority":"High","ongoing":false,"recurrence":"Weekly","id":1772665052596,"notes":"Escalated to Tidio via Slack","pinned":false,"startDate":"2026-03-04","dueDate":"2026-03-05","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[],"lastUpdated":""},{"name":"Tidio: First Response Time","category":"Tooling & Quality","status":"In Progress","priority":"High","ongoing":false,"recurrence":"Weekly","id":1772730903892,"notes":"","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[],"lastUpdated":""},{"name":"Tidio: Email and Ticket Scoping","category":"Tooling & Quality","status":"In Progress","priority":"High","ongoing":false,"recurrence":"Weekly","id":1772735713971,"notes":"","pinned":false,"startDate":"","dueDate":"","progress":0,"jiraUrl":"","confluenceUrl":"","milestones":[],"lastUpdated":""}];
 
-function load(){try{const s=localStorage.getItem("wt-tasks-v3");if(s){const parsed=JSON.parse(s);if(parsed.length>0)return parsed;}return SAVED_DATA;}catch{return SAVED_DATA;}}
+function load(){try{const s=localStorage.getItem("wt-tasks-v3");if(s){const p=JSON.parse(s);if(p&&p.length>0)return p;}return SAVED_DATA;}catch{return SAVED_DATA;}}
 function save(tasks){try{localStorage.setItem("wt-tasks-v3",JSON.stringify(tasks));}catch{}}
 
 function reducer(state,action){
@@ -73,8 +56,7 @@ function reducer(state,action){
     case"CHECK_IN":next=state.map(t=>t.id===action.id?{...t,lastUpdated:new Date().toLocaleDateString()}:t);break;
     default:return state;
   }
-  save(next);
-  return next;
+  save(next);return next;
 }
 
 function App(){
@@ -82,66 +64,31 @@ function App(){
   const [view,setView]=useState("board");
   const [filterCat,setFilterCat]=useState("All");
   const [filterStatus,setFilterStatus]=useState("All");
-  const [filterType,setFilterType]=useState("All"); // All | Project | Ongoing
+  const [filterType,setFilterType]=useState("All");
+  const [filterTool,setFilterTool]=useState("All");
   const [search,setSearch]=useState("");
   const [detailId,setDetailId]=useState(null);
   const [showAdd,setShowAdd]=useState(false);
   const [newTask,setNewTask]=useState({name:"",category:CATEGORIES[0],status:"In Progress",priority:"Medium",ongoing:false,recurrence:"Weekly"});
   const [saved,setSaved]=useState(false);
+  const [sortCol,setSortCol]=useState("name");
+  const [sortDir,setSortDir]=useState("asc");
   const timerRef=useRef(null);
 
-  useEffect(()=>{
-    setSaved(true);
-    clearTimeout(timerRef.current);
-    timerRef.current=setTimeout(()=>setSaved(false),2000);
-  },[tasks]);
+  useEffect(()=>{setSaved(true);clearTimeout(timerRef.current);timerRef.current=setTimeout(()=>setSaved(false),2000);},[tasks]);
 
-  const filtered=tasks.filter(t=>
-    (filterCat==="All"||t.category===filterCat)&&
-    (filterStatus==="All"||t.status===filterStatus)&&
-    (filterType==="All"||(filterType==="Ongoing"?t.ongoing:!t.ongoing))&&
-    t.name.toLowerCase().includes(search.toLowerCase())
-  ).sort((a,b)=>b.pinned-a.pinned);
-
-  const ongoingTasks=filtered.filter(t=>t.ongoing);
-  const projectTasks=filtered.filter(t=>!t.ongoing);
-  const grouped=CATEGORIES.reduce((acc,c)=>{acc[c]=projectTasks.filter(t=>t.category===c);return acc;},{});
-  const detailTask=tasks.find(t=>t.id===detailId);
-
-  const addTask=()=>{
-    if(!newTask.name.trim())return;
-    const isOngoing=newTask.ongoing===true;
-    dispatch({type:"ADD_TASK",task:{
-      ...newTask,
-      ongoing:isOngoing,
-      id:Date.now(),
-      notes:"",
-      pinned:false,
-      startDate:"",
-      dueDate:"",
-      progress:0,
-      jiraUrl:"",
-      confluenceUrl:"",
-      milestones:[],
-      lastUpdated:""
-    }});
-    setNewTask({name:"",category:CATEGORIES[0],status:"In Progress",priority:"Medium",ongoing:false,recurrence:"Weekly"});
-    setShowAdd(false);
-  };
-
-  // ── Slack digest ──
+  // Digest state
   const [showDigest,setShowDigest]=useState(false);
-  const [webhookUrl,setWebhookUrl]=useState(()=>localStorage.getItem("wt-slack-webhook")||"");
+  const [webhookUrl,setWebhookUrl]=useState(()=>{try{return localStorage.getItem("wt-slack-webhook")||"";}catch{return "";}});
   const [webhookInput,setWebhookInput]=useState("");
   const [showWebhookSetup,setShowWebhookSetup]=useState(false);
   const [slackSent,setSlackSent]=useState(false);
   const [slackError,setSlackError]=useState("");
 
   const today=new Date();
-  const fmt=d=>d?new Date(d).toLocaleDateString("en-US",{month:"short",day:"numeric"}):"";
   const daysSince=d=>d?Math.round((today-new Date(d))/86400000):999;
   const daysUntil=d=>d?Math.round((new Date(d)-today)/86400000):null;
-
+  const fmt=d=>d?new Date(d).toLocaleDateString("en-US",{month:"short",day:"numeric"}):"";
   const overdueCheckIns=tasks.filter(t=>t.ongoing&&daysSince(t.lastUpdated)>=7);
   const upcomingDue=tasks.filter(t=>!t.ongoing&&t.dueDate&&daysUntil(t.dueDate)!==null&&daysUntil(t.dueDate)<=7&&daysUntil(t.dueDate)>=0);
   const overdueDue=tasks.filter(t=>!t.ongoing&&t.dueDate&&daysUntil(t.dueDate)<0);
@@ -149,53 +96,78 @@ function App(){
 
   const buildDigest=()=>{
     const lines=[];
-    lines.push(`*📋 Work Tracker Digest — ${today.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}*`);
+    lines.push(`*Work Tracker Digest - ${today.toLocaleDateString("en-US",{weekday:"long",month:"long",day:"numeric"})}*`);
     lines.push("");
-    if(overdueCheckIns.length){
-      lines.push("*🔄 Ongoing — Check-in Overdue (7+ days)*");
-      overdueCheckIns.forEach(t=>lines.push(`• ${t.name} — last checked in: ${t.lastUpdated||"never"}`));
-      lines.push("");
-    }
-    if(overdueDue.length){
-      lines.push("*🚨 Overdue Projects*");
-      overdueDue.forEach(t=>lines.push(`• ${t.name} — was due ${fmt(t.dueDate)} (${Math.abs(daysUntil(t.dueDate))}d ago)`));
-      lines.push("");
-    }
-    if(upcomingDue.length){
-      lines.push("*⏰ Due Within 7 Days*");
-      upcomingDue.forEach(t=>lines.push(`• ${t.name} — due ${fmt(t.dueDate)} (${daysUntil(t.dueDate)}d)`));
-      lines.push("");
-    }
-    if(blocked.length){
-      lines.push("*🔴 Blocked*");
-      blocked.forEach(t=>lines.push(`• ${t.name}`));
-      lines.push("");
-    }
-    lines.push("*📊 Full Status Summary*");
-    ["In Progress","Pending","Blocked","On Hold","Complete"].forEach(s=>{
-      const count=tasks.filter(t=>t.status===s).length;
-      if(count) lines.push(`• ${s}: ${count}`);
-    });
-    lines.push("");
-    lines.push(`_${tasks.filter(t=>t.ongoing).length} ongoing · ${tasks.filter(t=>!t.ongoing).length} projects · ${tasks.filter(t=>t.status==="Complete").length} complete_`);
+    if(overdueCheckIns.length){lines.push("*Ongoing - Check-in Overdue (7+ days)*");overdueCheckIns.forEach(t=>lines.push(`- ${t.name} - last: ${t.lastUpdated||"never"}`));lines.push("");}
+    if(overdueDue.length){lines.push("*Overdue Projects*");overdueDue.forEach(t=>lines.push(`- ${t.name} - was due ${fmt(t.dueDate)}`));lines.push("");}
+    if(upcomingDue.length){lines.push("*Due Within 7 Days*");upcomingDue.forEach(t=>lines.push(`- ${t.name} - due ${fmt(t.dueDate)} (${daysUntil(t.dueDate)}d)`));lines.push("");}
+    if(blocked.length){lines.push("*Blocked*");blocked.forEach(t=>lines.push(`- ${t.name}`));lines.push("");}
+    lines.push("*Full Status Summary*");
+    ["In Progress","Pending","Blocked","On Hold","Complete"].forEach(s=>{const c=tasks.filter(t=>t.status===s).length;if(c)lines.push(`- ${s}: ${c}`);});
+    lines.push("");lines.push(`_${tasks.filter(t=>t.ongoing).length} ongoing - ${tasks.filter(t=>!t.ongoing).length} projects - ${tasks.filter(t=>t.status==="Complete").length} complete_`);
     return lines.join("\n");
   };
 
-  const saveWebhook=()=>{
-    localStorage.setItem("wt-slack-webhook",webhookInput);
-    setWebhookUrl(webhookInput);
-    setWebhookInput("");
-    setShowWebhookSetup(false);
-  };
-
+  const saveWebhook=()=>{try{localStorage.setItem("wt-slack-webhook",webhookInput);}catch{}setWebhookUrl(webhookInput);setWebhookInput("");setShowWebhookSetup(false);};
   const sendToSlack=async()=>{
     if(!webhookUrl){setShowWebhookSetup(true);return;}
     setSlackError("");
-    try{
-      await fetch(webhookUrl,{method:"POST",body:JSON.stringify({text:buildDigest()})});
-      setSlackSent(true);
-      setTimeout(()=>setSlackSent(false),3000);
-    }catch(e){setSlackError("Could not send — check your webhook URL.");}
+    try{await fetch(webhookUrl,{method:"POST",body:JSON.stringify({text:buildDigest()})});setSlackSent(true);setTimeout(()=>setSlackSent(false),3000);}
+    catch(e){setSlackError("Could not send - check your webhook URL.");}
+  };
+
+  const applyFilters=(list)=>list.filter(t=>
+    (filterCat==="All"||t.category===filterCat)&&
+    (filterStatus==="All"||t.status===filterStatus)&&
+    (filterType==="All"||(filterType==="Ongoing"?t.ongoing:!t.ongoing))&&
+    (filterTool==="All"||detectTools(t.name).includes(filterTool))&&
+    t.name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const allFiltered=applyFilters(tasks);
+  const ongoingTasks=allFiltered.filter(t=>t.ongoing);
+  const projectTasks=allFiltered.filter(t=>!t.ongoing);
+  const grouped=CATEGORIES.reduce((acc,c)=>{acc[c]=projectTasks.filter(t=>t.category===c);return acc;},{});
+  const detailTask=tasks.find(t=>t.id===detailId);
+
+  const handleSort=(col)=>{
+    if(sortCol===col){setSortDir(d=>d==="asc"?"desc":"asc");}
+    else{setSortCol(col);setSortDir("asc");}
+  };
+
+  const sortTasks=(list)=>{
+    return [...list].sort((a,b)=>{
+      let av,bv;
+      if(sortCol==="name"){av=a.name.toLowerCase();bv=b.name.toLowerCase();}
+      else if(sortCol==="category"){av=a.category;bv=b.category;}
+      else if(sortCol==="priority"){av=PRIORITY_ORDER[a.priority]??1;bv=PRIORITY_ORDER[b.priority]??1;return sortDir==="asc"?av-bv:bv-av;}
+      else if(sortCol==="status"){av=a.status;bv=b.status;}
+      else if(sortCol==="progress"){return sortDir==="asc"?a.progress-b.progress:b.progress-a.progress;}
+      else if(sortCol==="dueDate"){av=a.dueDate||"9999";bv=b.dueDate||"9999";}
+      else{av="";bv="";}
+      return sortDir==="asc"?av.localeCompare(bv):bv.localeCompare(av);
+    });
+  };
+
+  const SortIcon=({col})=>{
+    if(sortCol!==col)return <span style={{color:"#d1d5db",marginLeft:"4px"}}>&#8597;</span>;
+    return <span style={{color:"#4f46e5",marginLeft:"4px"}}>{sortDir==="asc"?"↑":"↓"}</span>;
+  };
+
+  const addTask=()=>{
+    if(!newTask.name.trim())return;
+    dispatch({type:"ADD_TASK",task:{...newTask,ongoing:newTask.ongoing===true,id:Date.now(),notes:"",pinned:false,startDate:"",dueDate:"",progress:0,jiraUrl:"",confluenceUrl:"",milestones:[],lastUpdated:""}});
+    setNewTask({name:"",category:CATEGORIES[0],status:"In Progress",priority:"Medium",ongoing:false,recurrence:"Weekly"});
+    setShowAdd(false);
+  };
+
+  const exportData=()=>{
+    const data=JSON.stringify(tasks);
+    const blob=new Blob([data],{type:"application/json"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement("a");
+    a.href=url;a.download="work-tracker-backup-"+new Date().toISOString().slice(0,10)+".json";
+    a.click();URL.revokeObjectURL(url);
   };
 
   return(
@@ -206,27 +178,20 @@ function App(){
           <h1 className="text-xl font-bold tracking-tight">My Work Tracker</h1>
           <p className="text-indigo-200 text-xs mt-0.5">
             {tasks.filter(t=>!t.ongoing).length} projects · {tasks.filter(t=>t.ongoing).length} ongoing · {tasks.filter(t=>t.status==="Blocked").length} blocked
-            {saved&&<span className="ml-3 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">✓ Saved</span>}
+            {saved&&<span className="ml-3 bg-green-500 text-white text-xs px-2 py-0.5 rounded-full">Saved</span>}
           </p>
         </div>
         <div className="flex gap-2 flex-wrap">
-          <button onClick={()=>setView(view==="board"?"list":"board")} className="bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded text-xs font-medium">{view==="board"?"📋 List":"🗂 Board"}</button>
-          <button onClick={()=>setShowDigest(true)} className="bg-indigo-500 hover:bg-indigo-400 px-3 py-1.5 rounded text-xs font-medium">&#128226; Slack Digest</button>
-          <button onClick={()=>{
-            const data=localStorage.getItem("wt-tasks-v3")||JSON.stringify(tasks);
-            const blob=new Blob([data],{type:"application/json"});
-            const url=URL.createObjectURL(blob);
-            const a=document.createElement("a");
-            a.href=url;a.download="work-tracker-backup-"+new Date().toISOString().slice(0,10)+".json";
-            a.click();URL.revokeObjectURL(url);
-          }} className="bg-indigo-500 hover:bg-indigo-400 px-3 py-1.5 rounded text-xs font-medium">&#128229; Export</button>
+          <button onClick={()=>setView(view==="board"?"list":"board")} className="bg-indigo-600 hover:bg-indigo-500 px-3 py-1.5 rounded text-xs font-medium">{view==="board"?"List View":"Board View"}</button>
+          <button onClick={()=>setShowDigest(true)} className="bg-indigo-500 hover:bg-indigo-400 px-3 py-1.5 rounded text-xs font-medium">Slack Digest</button>
+          <button onClick={exportData} className="bg-indigo-500 hover:bg-indigo-400 px-3 py-1.5 rounded text-xs font-medium">Export</button>
           <button onClick={()=>setShowAdd(true)} className="bg-white text-indigo-700 hover:bg-indigo-50 px-3 py-1.5 rounded text-xs font-bold">+ Add</button>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="px-6 py-3 bg-white border-b flex flex-wrap gap-3 items-center">
-        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="🔍 Search..." className="border rounded px-3 py-1.5 text-sm w-40 focus:outline-none focus:ring-2 focus:ring-indigo-300"/>
+      <div className="px-6 py-3 bg-white border-b flex flex-wrap gap-2 items-center">
+        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search..." className="border rounded px-3 py-1.5 text-sm w-36 focus:outline-none focus:ring-2 focus:ring-indigo-300"/>
         <select value={filterType} onChange={e=>setFilterType(e.target.value)} className="border rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300">
           <option value="All">All Types</option>
           <option value="Project">Projects</option>
@@ -240,10 +205,25 @@ function App(){
           <option value="All">All Statuses</option>
           {STATUS_OPTIONS.map(s=><option key={s}>{s}</option>)}
         </select>
+        {/* Tool filter */}
+        <select value={filterTool} onChange={e=>setFilterTool(e.target.value)} className="border-2 border-indigo-300 rounded px-2 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400 font-medium text-indigo-700">
+          <option value="All">All Tools</option>
+          {TOOLS.map(t=><option key={t}>{t}</option>)}
+        </select>
         <div className="ml-auto flex gap-2 flex-wrap">
           {STATUS_OPTIONS.map(s=><span key={s} className={`px-2 py-0.5 rounded-full text-xs font-medium ${STATUS_COLORS[s]}`}>{tasks.filter(t=>t.status===s).length} {s}</span>)}
         </div>
       </div>
+
+      {/* Active tool filter badge */}
+      {filterTool!=="All"&&(
+        <div className="px-6 py-2 bg-indigo-50 border-b flex items-center gap-2">
+          <span className="text-xs text-indigo-700 font-semibold">Filtering by tool:</span>
+          <span className="bg-indigo-600 text-white text-xs px-3 py-1 rounded-full font-medium">{filterTool}</span>
+          <span className="text-xs text-indigo-500">{allFiltered.length} item{allFiltered.length!==1?"s":""} match</span>
+          <button onClick={()=>setFilterTool("All")} className="ml-2 text-xs text-indigo-400 hover:text-indigo-700 underline">Clear</button>
+        </div>
+      )}
 
       {/* Add Modal */}
       {showAdd&&(
@@ -262,7 +242,6 @@ function App(){
                 {["High","Medium","Low"].map(p=><option key={p}>{p}</option>)}
               </select>
             </div>
-            {/* Type toggle */}
             <div className="flex rounded-lg border overflow-hidden mb-3">
               <button type="button" onClick={()=>setNewTask(prev=>({...prev,ongoing:false}))}
                 style={{flex:1,padding:"8px",fontSize:"13px",fontWeight:600,border:"none",cursor:"pointer",background:newTask.ongoing===false?"#4f46e5":"#fff",color:newTask.ongoing===false?"#fff":"#4b5563"}}>
@@ -279,12 +258,8 @@ function App(){
               </select>
             )}
             <div style={{display:"flex",gap:"8px",justifyContent:"flex-end",marginTop:"12px"}}>
-              <button type="button" onClick={()=>setShowAdd(false)}
-                style={{padding:"8px 16px",fontSize:"13px",border:"1px solid #d1d5db",borderRadius:"6px",background:"#fff",cursor:"pointer"}}>
-                Cancel
-              </button>
-              <button type="button" onClick={addTask}
-                style={{padding:"8px 16px",fontSize:"13px",fontWeight:600,border:"none",borderRadius:"6px",cursor:"pointer",background:newTask.ongoing===true?"#0d9488":"#4f46e5",color:"#fff"}}>
+              <button type="button" onClick={()=>setShowAdd(false)} style={{padding:"8px 16px",fontSize:"13px",border:"1px solid #d1d5db",borderRadius:"6px",background:"#fff",cursor:"pointer"}}>Cancel</button>
+              <button type="button" onClick={addTask} style={{padding:"8px 16px",fontSize:"13px",fontWeight:600,border:"none",borderRadius:"6px",cursor:"pointer",background:newTask.ongoing===true?"#0d9488":"#4f46e5",color:"#fff"}}>
                 {newTask.ongoing===true?"Add Ongoing":"Add Project"}
               </button>
             </div>
@@ -299,36 +274,28 @@ function App(){
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg max-h-screen overflow-y-auto">
             <div className="px-6 py-4 border-b flex items-center justify-between">
-              <div>
-                <h2 className="font-bold text-base">📣 Slack Digest</h2>
-                <p className="text-xs text-gray-400 mt-0.5">Send your daily/weekly summary to Slack</p>
-              </div>
-              <button onClick={()=>{setShowDigest(false);setSlackError("");}} className="text-gray-400 hover:text-gray-700 text-xl font-bold">✕</button>
+              <div><h2 className="font-bold text-base">Slack Digest</h2><p className="text-xs text-gray-400 mt-0.5">Send your daily/weekly summary to Slack</p></div>
+              <button onClick={()=>{setShowDigest(false);setSlackError("");}} className="text-gray-400 hover:text-gray-700 text-xl font-bold">x</button>
             </div>
             <div className="px-6 py-4 space-y-4">
-              {/* Alert badges */}
               <div className="flex flex-wrap gap-2">
-                {overdueCheckIns.length>0&&<span className="bg-orange-100 text-orange-700 text-xs px-3 py-1 rounded-full font-medium">🔄 {overdueCheckIns.length} check-in{overdueCheckIns.length>1?"s":""} overdue</span>}
-                {overdueDue.length>0&&<span className="bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full font-medium">🚨 {overdueDue.length} project{overdueDue.length>1?"s":""} overdue</span>}
-                {upcomingDue.length>0&&<span className="bg-yellow-100 text-yellow-700 text-xs px-3 py-1 rounded-full font-medium">⏰ {upcomingDue.length} due soon</span>}
-                {blocked.length>0&&<span className="bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full font-medium">🔴 {blocked.length} blocked</span>}
-                {overdueCheckIns.length===0&&overdueDue.length===0&&upcomingDue.length===0&&blocked.length===0&&<span className="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-medium">✅ All clear!</span>}
+                {overdueCheckIns.length>0&&<span className="bg-orange-100 text-orange-700 text-xs px-3 py-1 rounded-full font-medium">{overdueCheckIns.length} check-in{overdueCheckIns.length>1?"s":""} overdue</span>}
+                {overdueDue.length>0&&<span className="bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full font-medium">{overdueDue.length} project{overdueDue.length>1?"s":""} overdue</span>}
+                {upcomingDue.length>0&&<span className="bg-yellow-100 text-yellow-700 text-xs px-3 py-1 rounded-full font-medium">{upcomingDue.length} due soon</span>}
+                {blocked.length>0&&<span className="bg-red-100 text-red-700 text-xs px-3 py-1 rounded-full font-medium">{blocked.length} blocked</span>}
+                {overdueCheckIns.length===0&&overdueDue.length===0&&upcomingDue.length===0&&blocked.length===0&&<span className="bg-green-100 text-green-700 text-xs px-3 py-1 rounded-full font-medium">All clear!</span>}
               </div>
-
-              {/* Preview */}
               <div>
                 <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Message Preview</label>
                 <pre className="bg-gray-50 border rounded-xl px-4 py-3 text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed max-h-64 overflow-y-auto">{buildDigest()}</pre>
               </div>
-
-              {/* Webhook setup */}
               {showWebhookSetup?(
                 <div className="bg-indigo-50 rounded-xl p-4 space-y-3">
                   <p className="text-xs font-semibold text-indigo-800">Set up Slack Webhook</p>
                   <ol className="text-xs text-indigo-700 space-y-1 list-decimal list-inside">
-                    <li>Go to <a href="https://api.slack.com/apps" target="_blank" rel="noreferrer" className="underline font-medium">api.slack.com/apps</a> → Create New App → From Scratch</li>
-                    <li>Add feature: <strong>Incoming Webhooks</strong> → Activate</li>
-                    <li>Click "Add New Webhook to Workspace" → pick a channel (your DMs work!)</li>
+                    <li>Go to <a href="https://api.slack.com/apps" target="_blank" rel="noreferrer" className="underline font-medium">api.slack.com/apps</a> - Create New App - From Scratch</li>
+                    <li>Add feature: Incoming Webhooks - Activate</li>
+                    <li>Click "Add New Webhook to Workspace" - pick your DM channel</li>
                     <li>Copy the webhook URL and paste below</li>
                   </ol>
                   <input value={webhookInput} onChange={e=>setWebhookInput(e.target.value)} placeholder="https://hooks.slack.com/services/..." className="w-full border rounded-lg px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-300"/>
@@ -339,38 +306,26 @@ function App(){
                 </div>
               ):(
                 <div className="flex items-center gap-2">
-                  {webhookUrl&&<p className="text-xs text-green-600 font-medium flex-1">✓ Webhook configured</p>}
-                  {!webhookUrl&&<p className="text-xs text-gray-400 flex-1">No webhook set — send manually or configure below</p>}
-                  <button onClick={()=>setShowWebhookSetup(true)} className="text-xs text-indigo-500 hover:text-indigo-700 underline shrink-0">{webhookUrl?"Change webhook":"Set up webhook"}</button>
+                  {webhookUrl?<p className="text-xs text-green-600 font-medium flex-1">Webhook configured</p>:<p className="text-xs text-gray-400 flex-1">No webhook set</p>}
+                  <button onClick={()=>setShowWebhookSetup(true)} className="text-xs text-indigo-500 hover:text-indigo-700 underline shrink-0">{webhookUrl?"Change":"Set up webhook"}</button>
                 </div>
               )}
-
               {slackError&&<p className="text-xs text-red-500 font-medium">{slackError}</p>}
-
-              {/* Action buttons */}
               <div className="flex gap-2 pt-1">
-                <button onClick={sendToSlack} className={`flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-colors ${slackSent?"bg-green-500":"bg-indigo-600 hover:bg-indigo-700"}`}>
-                  {slackSent?"✓ Sent to Slack!":"Send to Slack"}
-                </button>
-                <button onClick={()=>{navigator.clipboard.writeText(buildDigest());}} className="flex-1 py-2.5 rounded-xl text-sm font-medium border hover:bg-gray-50">
-                  📋 Copy to Clipboard
-                </button>
+                <button onClick={sendToSlack} className={`flex-1 py-2.5 rounded-xl text-sm font-bold text-white transition-colors ${slackSent?"bg-green-500":"bg-indigo-600 hover:bg-indigo-700"}`}>{slackSent?"Sent!":"Send to Slack"}</button>
+                <button onClick={()=>navigator.clipboard.writeText(buildDigest())} className="flex-1 py-2.5 rounded-xl text-sm font-medium border hover:bg-gray-50">Copy to Clipboard</button>
               </div>
-              <p className="text-xs text-gray-400 text-center">Tip: bookmark the tracker and open it each morning as your standup prep</p>
             </div>
           </div>
         </div>
       )}
 
       <div className="p-6 space-y-10">
-
-        {/* ONGOING SECTION */}
+        {/* ONGOING */}
         {ongoingTasks.length>0&&(filterType==="All"||filterType==="Ongoing")&&(
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <h2 className="text-sm font-bold text-teal-700 uppercase tracking-widest flex items-center gap-2">
-                🔄 Ongoing Operations
-              </h2>
+              <h2 className="text-sm font-bold text-teal-700 uppercase tracking-widest">Ongoing Operations</h2>
               <span className="bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full text-xs font-medium">{ongoingTasks.length} active</span>
             </div>
             {view==="board"?(
@@ -378,16 +333,16 @@ function App(){
                 {ongoingTasks.map(t=><OngoingCard key={t.id} task={t} dispatch={dispatch} onOpen={()=>setDetailId(t.id)}/>)}
               </div>
             ):(
-              <OngoingTable tasks={ongoingTasks} dispatch={dispatch} onOpen={setDetailId}/>
+              <OngoingTable tasks={ongoingTasks} dispatch={dispatch} onOpen={setDetailId} sortTasks={sortTasks} handleSort={handleSort} sortCol={sortCol} sortDir={sortDir} SortIcon={SortIcon}/>
             )}
           </div>
         )}
 
-        {/* PROJECTS SECTION */}
+        {/* PROJECTS */}
         {projectTasks.length>0&&(filterType==="All"||filterType==="Project")&&(
           <div>
             <div className="flex items-center gap-3 mb-4">
-              <h2 className="text-sm font-bold text-indigo-700 uppercase tracking-widest">📋 Projects</h2>
+              <h2 className="text-sm font-bold text-indigo-700 uppercase tracking-widest">Projects</h2>
               <span className="bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded-full text-xs font-medium">{projectTasks.length} active</span>
             </div>
             {view==="board"?(
@@ -408,7 +363,7 @@ function App(){
                 })}
               </div>
             ):(
-              <ProjectTable tasks={projectTasks} dispatch={dispatch} onOpen={setDetailId}/>
+              <ProjectTable tasks={projectTasks} dispatch={dispatch} onOpen={setDetailId} sortTasks={sortTasks} handleSort={handleSort} sortCol={sortCol} sortDir={sortDir} SortIcon={SortIcon}/>
             )}
           </div>
         )}
@@ -419,65 +374,67 @@ function App(){
 
 /* ── Ongoing Card ── */
 function OngoingCard({task:t,dispatch,onOpen}){
-  const statusDot={"In Progress":"bg-teal-400","Pending":"bg-yellow-400","Blocked":"bg-red-400","On Hold":"bg-gray-400","Complete":"bg-green-400"};
+  const dot={"In Progress":"bg-teal-400","Pending":"bg-yellow-400","Blocked":"bg-red-400","On Hold":"bg-gray-400","Complete":"bg-green-400"};
+  const tools=detectTools(t.name);
   return(
     <div onClick={onOpen} className="bg-white rounded-xl border-2 border-teal-100 shadow-sm hover:shadow-md hover:border-teal-300 transition-all cursor-pointer group">
       <div className="p-4">
-        <div className="flex items-start justify-between gap-2 mb-3">
-          <p className="font-semibold text-gray-800 text-sm leading-snug flex-1 group-hover:text-teal-700 transition-colors">{t.name}</p>
-          <span className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1 ${statusDot[t.status]||"bg-gray-300"}`}/>
+        <div className="flex items-start justify-between gap-2 mb-2">
+          <p className="font-semibold text-gray-800 text-sm leading-snug flex-1 group-hover:text-teal-700">{t.name}</p>
+          <span className={`w-2.5 h-2.5 rounded-full shrink-0 mt-1 ${dot[t.status]||"bg-gray-300"}`}/>
         </div>
+        {tools.length>0&&<div className="flex flex-wrap gap-1 mb-2">{tools.map(tool=><span key={tool} className="text-xs bg-indigo-50 text-indigo-600 border border-indigo-100 px-1.5 py-0.5 rounded font-medium">{tool}</span>)}</div>}
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full font-medium">🔄 {t.recurrence||"Ongoing"}</span>
+          <span className="text-xs bg-teal-50 text-teal-700 border border-teal-200 px-2 py-0.5 rounded-full font-medium">{t.recurrence||"Ongoing"}</span>
           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${{"High":"bg-red-50 text-red-700","Medium":"bg-orange-50 text-orange-700","Low":"bg-gray-50 text-gray-600"}[t.priority]}`}>{t.priority}</span>
         </div>
-        <div className="flex items-center justify-between mt-3">
-          <span className="text-xs text-gray-400">{t.lastUpdated?"Last checked in: "+t.lastUpdated:"No check-in yet"}</span>
-        </div>
-        <button onClick={e=>{e.stopPropagation();dispatch({type:"CHECK_IN",id:t.id});}}
-          className="mt-3 w-full text-xs bg-teal-50 hover:bg-teal-100 text-teal-700 font-medium py-1.5 rounded-lg border border-teal-200 transition-colors">
-          ✓ Check In
-        </button>
+        <p className="text-xs text-gray-400 mt-2">{t.lastUpdated?"Last check-in: "+t.lastUpdated:"No check-in yet"}</p>
+        <button onClick={e=>{e.stopPropagation();dispatch({type:"CHECK_IN",id:t.id});}} className="mt-3 w-full text-xs bg-teal-50 hover:bg-teal-100 text-teal-700 font-medium py-1.5 rounded-lg border border-teal-200 transition-colors">Check In</button>
       </div>
     </div>
   );
 }
 
 /* ── Ongoing Table ── */
-function OngoingTable({tasks,dispatch,onOpen}){
+function OngoingTable({tasks,dispatch,onOpen,sortTasks,handleSort,sortCol,sortDir,SortIcon}){
   return(
     <div className="bg-white rounded-xl border overflow-auto">
       <table className="w-full text-sm">
         <thead className="bg-teal-50 text-teal-700 text-xs uppercase tracking-wider">
           <tr>
-            <th className="px-4 py-3 text-left">Name</th>
-            <th className="px-4 py-3 text-left">Category</th>
-            <th className="px-4 py-3 text-left">Priority</th>
-            <th className="px-4 py-3 text-left">Status</th>
+            <th className="px-4 py-3 text-left sort-btn" onClick={()=>handleSort("name")}>Name <SortIcon col="name"/></th>
+            <th className="px-4 py-3 text-left sort-btn" onClick={()=>handleSort("category")}>Category <SortIcon col="category"/></th>
+            <th className="px-4 py-3 text-left sort-btn" onClick={()=>handleSort("priority")}>Priority <SortIcon col="priority"/></th>
+            <th className="px-4 py-3 text-left sort-btn" onClick={()=>handleSort("status")}>Status <SortIcon col="status"/></th>
             <th className="px-4 py-3 text-left">Recurrence</th>
+            <th className="px-4 py-3 text-left">Tool</th>
             <th className="px-4 py-3 text-left">Last Check-in</th>
             <th className="px-4 py-3 text-left"></th>
           </tr>
         </thead>
         <tbody>
-          {tasks.map((t,i)=>(
-            <tr key={t.id} className={`border-t hover:bg-teal-50 transition-colors ${i%2===0?"":"bg-gray-50"}`}>
-              <td className="px-4 py-3 font-medium">{t.name}</td>
-              <td className="px-4 py-3 text-gray-500 text-xs">{t.category}</td>
-              <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${{"High":"bg-red-50 text-red-700 border border-red-200","Medium":"bg-orange-50 text-orange-700 border border-orange-200","Low":"bg-gray-50 text-gray-600 border border-gray-200"}[t.priority]}`}>{t.priority}</span></td>
-              <td className="px-4 py-3">
-                <select value={t.status} onChange={e=>dispatch({type:"UPDATE",id:t.id,field:"status",value:e.target.value})} className={`rounded px-2 py-0.5 text-xs font-medium border-0 cursor-pointer ${{"In Progress":"bg-blue-100 text-blue-800","Pending":"bg-yellow-100 text-yellow-800","Blocked":"bg-red-100 text-red-800","Complete":"bg-green-100 text-green-800","On Hold":"bg-gray-100 text-gray-700"}[t.status]}`}>
-                  {["In Progress","Pending","Blocked","On Hold"].map(s=><option key={s}>{s}</option>)}
-                </select>
-              </td>
-              <td className="px-4 py-3 text-xs text-teal-700 font-medium">{t.recurrence||"—"}</td>
-              <td className="px-4 py-3 text-xs text-gray-400">{t.lastUpdated||"Never"}</td>
-              <td className="px-4 py-3 flex gap-2">
-                <button onClick={()=>dispatch({type:"CHECK_IN",id:t.id})} className="text-xs bg-teal-50 hover:bg-teal-100 text-teal-700 px-2 py-1 rounded border border-teal-200 font-medium">✓ Check In</button>
-                <button onClick={()=>onOpen(t.id)} className="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Open →</button>
-              </td>
-            </tr>
-          ))}
+          {sortTasks(tasks).map((t,i)=>{
+            const tools=detectTools(t.name);
+            return(
+              <tr key={t.id} className={`border-t hover:bg-teal-50 transition-colors ${i%2===0?"":"bg-gray-50"}`}>
+                <td className="px-4 py-3 font-medium">{t.name}</td>
+                <td className="px-4 py-3 text-gray-500 text-xs">{t.category}</td>
+                <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${{"High":"bg-red-50 text-red-700 border border-red-200","Medium":"bg-orange-50 text-orange-700 border border-orange-200","Low":"bg-gray-50 text-gray-600 border border-gray-200"}[t.priority]}`}>{t.priority}</span></td>
+                <td className="px-4 py-3">
+                  <select value={t.status} onChange={e=>dispatch({type:"UPDATE",id:t.id,field:"status",value:e.target.value})} className={`rounded px-2 py-0.5 text-xs font-medium border-0 cursor-pointer ${{"In Progress":"bg-blue-100 text-blue-800","Pending":"bg-yellow-100 text-yellow-800","Blocked":"bg-red-100 text-red-800","Complete":"bg-green-100 text-green-800","On Hold":"bg-gray-100 text-gray-700"}[t.status]}`}>
+                    {["In Progress","Pending","Blocked","On Hold"].map(s=><option key={s}>{s}</option>)}
+                  </select>
+                </td>
+                <td className="px-4 py-3 text-xs text-teal-700 font-medium">{t.recurrence||"—"}</td>
+                <td className="px-4 py-3">{tools.length>0?<div className="flex flex-wrap gap-1">{tools.map(tool=><span key={tool} className="text-xs bg-indigo-50 text-indigo-600 border border-indigo-100 px-1.5 py-0.5 rounded font-medium">{tool}</span>)}</div>:<span className="text-gray-300 text-xs">—</span>}</td>
+                <td className="px-4 py-3 text-xs text-gray-400">{t.lastUpdated||"Never"}</td>
+                <td className="px-4 py-3 flex gap-2">
+                  <button onClick={()=>dispatch({type:"CHECK_IN",id:t.id})} className="text-xs bg-teal-50 hover:bg-teal-100 text-teal-700 px-2 py-1 rounded border border-teal-200 font-medium">Check In</button>
+                  <button onClick={()=>onOpen(t.id)} className="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Open</button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -486,19 +443,18 @@ function OngoingTable({tasks,dispatch,onOpen}){
 
 /* ── Project Card ── */
 function ProjectCard({task:t,dispatch,onOpen}){
-  const STATUS_BAR={"In Progress":"bg-blue-400","Pending":"bg-yellow-400","Blocked":"bg-red-400","Complete":"bg-green-400","On Hold":"bg-gray-400"};
-  const PRIORITY_COLORS={"High":"bg-red-50 text-red-700 border border-red-200","Medium":"bg-orange-50 text-orange-700 border border-orange-200","Low":"bg-gray-50 text-gray-600 border border-gray-200"};
-  const STATUS_COLORS={"In Progress":"bg-blue-100 text-blue-800","Pending":"bg-yellow-100 text-yellow-800","Blocked":"bg-red-100 text-red-800","Complete":"bg-green-100 text-green-800","On Hold":"bg-gray-100 text-gray-700"};
+  const tools=detectTools(t.name);
   return(
     <div onClick={onOpen} className={`bg-white rounded-xl border shadow-sm hover:shadow-md transition-all cursor-pointer group ${t.pinned?"border-amber-300":"border-gray-200"}`}>
-      <div className={`h-1 rounded-t-xl ${STATUS_BAR[t.status]}`}/>
+      <div className={`h-1 rounded-t-xl ${{"In Progress":"bg-blue-400","Pending":"bg-yellow-400","Blocked":"bg-red-400","Complete":"bg-green-400","On Hold":"bg-gray-400"}[t.status]}`}/>
       <div className="p-4">
-        <div className="flex justify-between items-start gap-2 mb-2">
-          <p className="font-semibold text-gray-800 text-sm leading-snug flex-1 group-hover:text-indigo-700 transition-colors">{t.name}</p>
-          <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${PRIORITY_COLORS[t.priority]}`}>{t.priority}</span>
+        <div className="flex justify-between items-start gap-2 mb-1">
+          <p className="font-semibold text-gray-800 text-sm leading-snug flex-1 group-hover:text-indigo-700">{t.name}</p>
+          <span className={`text-xs px-2 py-0.5 rounded-full font-medium shrink-0 ${{"High":"bg-red-50 text-red-700 border border-red-200","Medium":"bg-orange-50 text-orange-700 border border-orange-200","Low":"bg-gray-50 text-gray-600 border border-gray-200"}[t.priority]}`}>{t.priority}</span>
         </div>
+        {tools.length>0&&<div className="flex flex-wrap gap-1 mb-2">{tools.map(tool=><span key={tool} className="text-xs bg-indigo-50 text-indigo-600 border border-indigo-100 px-1.5 py-0.5 rounded font-medium">{tool}</span>)}</div>}
         <div className="flex items-center gap-2 mb-3">
-          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${STATUS_COLORS[t.status]}`}>{t.status}</span>
+          <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${{"In Progress":"bg-blue-100 text-blue-800","Pending":"bg-yellow-100 text-yellow-800","Blocked":"bg-red-100 text-red-800","Complete":"bg-green-100 text-green-800","On Hold":"bg-gray-100 text-gray-700"}[t.status]}`}>{t.status}</span>
           {t.dueDate&&<span className="text-xs text-gray-400 ml-auto">Due {t.dueDate}</span>}
         </div>
         <div className="mb-1 flex items-center justify-between">
@@ -506,70 +462,74 @@ function ProjectCard({task:t,dispatch,onOpen}){
           <span className="text-xs text-gray-500 font-medium">{t.progress}%</span>
         </div>
         <div className="bg-gray-100 rounded-full h-1.5">
-          <div className={`h-1.5 rounded-full transition-all ${STATUS_BAR[t.status]}`} style={{width:`${t.progress}%`}}/>
+          <div className={`h-1.5 rounded-full ${{"In Progress":"bg-blue-400","Pending":"bg-yellow-400","Blocked":"bg-red-400","Complete":"bg-green-400","On Hold":"bg-gray-400"}[t.status]}`} style={{width:`${t.progress}%`}}/>
         </div>
         <div className="flex gap-2 mt-3 flex-wrap">
-          {t.jiraUrl&&<a href={t.jiraUrl} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} className="text-xs text-blue-500 hover:underline font-medium">🔗 Jira</a>}
-          {t.confluenceUrl&&<a href={t.confluenceUrl} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} className="text-xs text-purple-500 hover:underline font-medium">📄 Confluence</a>}
-          {t.milestones.length>0&&<span className="text-xs text-gray-400 ml-auto">{t.milestones.filter(m=>m.done).length}/{t.milestones.length} milestones</span>}
+          {t.jiraUrl&&<a href={t.jiraUrl} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} className="text-xs text-blue-500 hover:underline font-medium">Jira</a>}
+          {t.confluenceUrl&&<a href={t.confluenceUrl} target="_blank" rel="noreferrer" onClick={e=>e.stopPropagation()} className="text-xs text-purple-500 hover:underline font-medium">Confluence</a>}
+          {t.milestones&&t.milestones.length>0&&<span className="text-xs text-gray-400 ml-auto">{t.milestones.filter(m=>m.done).length}/{t.milestones.length} milestones</span>}
         </div>
-        <p className="text-xs text-indigo-400 mt-3 group-hover:text-indigo-600 font-medium">Click to open →</p>
       </div>
     </div>
   );
 }
 
 /* ── Project Table ── */
-function ProjectTable({tasks,dispatch,onOpen}){
-  const STATUS_COLORS={"In Progress":"bg-blue-100 text-blue-800","Pending":"bg-yellow-100 text-yellow-800","Blocked":"bg-red-100 text-red-800","Complete":"bg-green-100 text-green-800","On Hold":"bg-gray-100 text-gray-700"};
-  const STATUS_BAR={"In Progress":"bg-blue-400","Pending":"bg-yellow-400","Blocked":"bg-red-400","Complete":"bg-green-400","On Hold":"bg-gray-400"};
-  const PRIORITY_COLORS={"High":"bg-red-50 text-red-700 border border-red-200","Medium":"bg-orange-50 text-orange-700 border border-orange-200","Low":"bg-gray-50 text-gray-600 border border-gray-200"};
+function ProjectTable({tasks,dispatch,onOpen,sortTasks,handleSort,sortCol,sortDir,SortIcon}){
+  const SC={"In Progress":"bg-blue-100 text-blue-800","Pending":"bg-yellow-100 text-yellow-800","Blocked":"bg-red-100 text-red-800","Complete":"bg-green-100 text-green-800","On Hold":"bg-gray-100 text-gray-700"};
+  const SB={"In Progress":"bg-blue-400","Pending":"bg-yellow-400","Blocked":"bg-red-400","Complete":"bg-green-400","On Hold":"bg-gray-400"};
+  const PC={"High":"bg-red-50 text-red-700 border border-red-200","Medium":"bg-orange-50 text-orange-700 border border-orange-200","Low":"bg-gray-50 text-gray-600 border border-gray-200"};
   return(
     <div className="bg-white rounded-xl border overflow-auto">
       <table className="w-full text-sm">
         <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
           <tr>
-            <th className="px-4 py-3 text-left">Project</th>
-            <th className="px-4 py-3 text-left">Category</th>
-            <th className="px-4 py-3 text-left">Priority</th>
-            <th className="px-4 py-3 text-left">Status</th>
-            <th className="px-4 py-3 text-left">Progress</th>
-            <th className="px-4 py-3 text-left">Due</th>
+            <th className="px-4 py-3 text-left sort-btn" onClick={()=>handleSort("name")}>Project <SortIcon col="name"/></th>
+            <th className="px-4 py-3 text-left sort-btn" onClick={()=>handleSort("category")}>Category <SortIcon col="category"/></th>
+            <th className="px-4 py-3 text-left">Tool</th>
+            <th className="px-4 py-3 text-left sort-btn" onClick={()=>handleSort("priority")}>Priority <SortIcon col="priority"/></th>
+            <th className="px-4 py-3 text-left sort-btn" onClick={()=>handleSort("status")}>Status <SortIcon col="status"/></th>
+            <th className="px-4 py-3 text-left sort-btn" onClick={()=>handleSort("progress")}>Progress <SortIcon col="progress"/></th>
+            <th className="px-4 py-3 text-left sort-btn" onClick={()=>handleSort("dueDate")}>Due <SortIcon col="dueDate"/></th>
             <th className="px-4 py-3 text-left">Links</th>
             <th className="px-4 py-3 text-left"></th>
           </tr>
         </thead>
         <tbody>
-          {tasks.map((t,i)=>(
-            <tr key={t.id} className={`border-t hover:bg-indigo-50 transition-colors ${i%2===0?"":"bg-gray-50"}`}>
-              <td className="px-4 py-3 font-medium">{t.pinned&&"📌 "}{t.name}</td>
-              <td className="px-4 py-3 text-gray-500 text-xs">{t.category}</td>
-              <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${PRIORITY_COLORS[t.priority]}`}>{t.priority}</span></td>
-              <td className="px-4 py-3">
-                <select value={t.status} onChange={e=>dispatch({type:"UPDATE",id:t.id,field:"status",value:e.target.value})} className={`rounded px-2 py-0.5 text-xs font-medium border-0 cursor-pointer ${STATUS_COLORS[t.status]}`}>
-                  {STATUS_OPTIONS.map(s=><option key={s}>{s}</option>)}
-                </select>
-              </td>
-              <td className="px-4 py-3 w-32">
-                <div className="flex items-center gap-2">
-                  <div className="flex-1 bg-gray-100 rounded-full h-1.5">
-                    <div className={`h-1.5 rounded-full ${STATUS_BAR[t.status]}`} style={{width:`${t.progress}%`}}/>
+          {sortTasks(tasks).map((t,i)=>{
+            const tools=detectTools(t.name);
+            return(
+              <tr key={t.id} className={`border-t hover:bg-indigo-50 transition-colors ${i%2===0?"":"bg-gray-50"}`}>
+                <td className="px-4 py-3 font-medium max-w-xs">{t.pinned&&"📌 "}{t.name}</td>
+                <td className="px-4 py-3 text-gray-500 text-xs">{t.category}</td>
+                <td className="px-4 py-3">{tools.length>0?<div className="flex flex-wrap gap-1">{tools.map(tool=><span key={tool} className="text-xs bg-indigo-50 text-indigo-600 border border-indigo-100 px-1.5 py-0.5 rounded font-medium">{tool}</span>)}</div>:<span className="text-gray-300 text-xs">—</span>}</td>
+                <td className="px-4 py-3"><span className={`text-xs px-2 py-0.5 rounded-full font-medium ${PC[t.priority]}`}>{t.priority}</span></td>
+                <td className="px-4 py-3">
+                  <select value={t.status} onChange={e=>dispatch({type:"UPDATE",id:t.id,field:"status",value:e.target.value})} className={`rounded px-2 py-0.5 text-xs font-medium border-0 cursor-pointer ${SC[t.status]}`}>
+                    {STATUS_OPTIONS.map(s=><option key={s}>{s}</option>)}
+                  </select>
+                </td>
+                <td className="px-4 py-3 w-32">
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 bg-gray-100 rounded-full h-1.5">
+                      <div className={`h-1.5 rounded-full ${SB[t.status]}`} style={{width:`${t.progress}%`}}/>
+                    </div>
+                    <span className="text-xs text-gray-500 w-8">{t.progress}%</span>
                   </div>
-                  <span className="text-xs text-gray-500 w-8">{t.progress}%</span>
-                </div>
-              </td>
-              <td className="px-4 py-3 text-xs text-gray-500">{t.dueDate||<span className="text-gray-300">—</span>}</td>
-              <td className="px-4 py-3">
-                <div className="flex gap-2">
-                  {t.jiraUrl&&<a href={t.jiraUrl} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-700 text-xs font-medium">Jira</a>}
-                  {t.confluenceUrl&&<a href={t.confluenceUrl} target="_blank" rel="noreferrer" className="text-purple-500 hover:text-purple-700 text-xs font-medium">Confluence</a>}
-                </div>
-              </td>
-              <td className="px-4 py-3">
-                <button onClick={()=>onOpen(t.id)} className="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Open →</button>
-              </td>
-            </tr>
-          ))}
+                </td>
+                <td className="px-4 py-3 text-xs text-gray-500">{t.dueDate||<span className="text-gray-300">—</span>}</td>
+                <td className="px-4 py-3">
+                  <div className="flex gap-2">
+                    {t.jiraUrl&&<a href={t.jiraUrl} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-700 text-xs font-medium">Jira</a>}
+                    {t.confluenceUrl&&<a href={t.confluenceUrl} target="_blank" rel="noreferrer" className="text-purple-500 hover:text-purple-700 text-xs font-medium">Confluence</a>}
+                  </div>
+                </td>
+                <td className="px-4 py-3">
+                  <button onClick={()=>onOpen(t.id)} className="text-xs text-indigo-600 hover:text-indigo-800 font-medium">Open</button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>
@@ -578,40 +538,36 @@ function ProjectTable({tasks,dispatch,onOpen}){
 
 /* ── Detail Panel ── */
 function DetailPanel({task:t,dispatch,onClose}){
-  const STATUS_COLORS={"In Progress":"bg-blue-100 text-blue-800","Pending":"bg-yellow-100 text-yellow-800","Blocked":"bg-red-100 text-red-800","Complete":"bg-green-100 text-green-800","On Hold":"bg-gray-100 text-gray-700"};
-  const STATUS_BAR={"In Progress":"bg-blue-400","Pending":"bg-yellow-400","Blocked":"bg-red-400","Complete":"bg-green-400","On Hold":"bg-gray-400"};
+  const SC={"In Progress":"bg-blue-100 text-blue-800","Pending":"bg-yellow-100 text-yellow-800","Blocked":"bg-red-100 text-red-800","Complete":"bg-green-100 text-green-800","On Hold":"bg-gray-100 text-gray-700"};
+  const SB={"In Progress":"bg-blue-400","Pending":"bg-yellow-400","Blocked":"bg-red-400","Complete":"bg-green-400","On Hold":"bg-gray-400"};
   const [newMs,setNewMs]=useState("");
   const [newMsDate,setNewMsDate]=useState("");
   const up=(field,value)=>dispatch({type:"UPDATE",id:t.id,field,value});
-  const addMilestone=()=>{
-    if(!newMs.trim())return;
-    dispatch({type:"ADD_MILESTONE",id:t.id,milestone:{id:Date.now(),label:newMs,date:newMsDate,done:false}});
-    setNewMs("");setNewMsDate("");
-  };
+  const addMilestone=()=>{if(!newMs.trim())return;dispatch({type:"ADD_MILESTONE",id:t.id,milestone:{id:Date.now(),label:newMs,date:newMsDate,done:false}});setNewMs("");setNewMsDate("");};
   const daysRemaining=t.dueDate?Math.round((new Date(t.dueDate)-new Date())/86400000):null;
   const totalDays=(t.startDate&&t.dueDate)?Math.round((new Date(t.dueDate)-new Date(t.startDate))/86400000):null;
+  const tools=detectTools(t.name);
 
   return(
     <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex justify-end" onClick={onClose}>
       <div className="bg-white w-full max-w-2xl h-full overflow-y-auto shadow-2xl" onClick={e=>e.stopPropagation()}>
-        <div className={`h-2 w-full ${t.ongoing?"bg-teal-400":STATUS_BAR[t.status]}`}/>
+        <div className={`h-2 w-full ${t.ongoing?"bg-teal-400":SB[t.status]}`}/>
         <div className="px-6 py-5 border-b flex items-start justify-between gap-4">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
+            <div className="flex items-center gap-2 mb-1 flex-wrap">
               <p className="text-xs text-gray-400 uppercase tracking-wider">{t.category}</p>
-              {t.ongoing&&<span className="text-xs bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-medium">🔄 Ongoing</span>}
+              {t.ongoing&&<span className="text-xs bg-teal-100 text-teal-700 px-2 py-0.5 rounded-full font-medium">Ongoing</span>}
+              {tools.map(tool=><span key={tool} className="text-xs bg-indigo-50 text-indigo-600 border border-indigo-100 px-2 py-0.5 rounded font-medium">{tool}</span>)}
             </div>
             <h2 className="text-lg font-bold text-gray-900 leading-tight">{t.name}</h2>
           </div>
-          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-xl font-bold mt-1">✕</button>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-700 text-xl font-bold mt-1">x</button>
         </div>
-
         <div className="px-6 py-5 space-y-6">
-          {/* Status / Priority row */}
-          <div className={`grid gap-3 ${t.ongoing?"grid-cols-3":"grid-cols-3"}`}>
+          <div className="grid grid-cols-3 gap-3">
             <div>
               <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-1">Status</label>
-              <select value={t.status} onChange={e=>up("status",e.target.value)} className={`w-full rounded-lg px-3 py-2 text-sm font-medium border-0 cursor-pointer ${STATUS_COLORS[t.status]}`}>
+              <select value={t.status} onChange={e=>up("status",e.target.value)} className={`w-full rounded-lg px-3 py-2 text-sm font-medium border-0 cursor-pointer ${SC[t.status]}`}>
                 {(t.ongoing?["In Progress","Pending","Blocked","On Hold"]:STATUS_OPTIONS).map(s=><option key={s}>{s}</option>)}
               </select>
             </div>
@@ -638,53 +594,37 @@ function DetailPanel({task:t,dispatch,onClose}){
               </div>
             )}
           </div>
-
-          {/* Check-in (ongoing only) */}
           {t.ongoing&&(
             <div className="bg-teal-50 rounded-xl p-4 flex items-center justify-between">
               <div>
                 <p className="text-sm font-semibold text-teal-800">Check-in</p>
                 <p className="text-xs text-teal-600 mt-0.5">{t.lastUpdated?"Last checked in: "+t.lastUpdated:"No check-ins recorded yet"}</p>
               </div>
-              <button onClick={()=>dispatch({type:"CHECK_IN",id:t.id})} className="bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors">
-                ✓ Check In Now
-              </button>
+              <button onClick={()=>dispatch({type:"CHECK_IN",id:t.id})} className="bg-teal-600 hover:bg-teal-700 text-white text-sm font-medium px-4 py-2 rounded-lg">Check In Now</button>
             </div>
           )}
-
-          {/* Timeline (projects only) */}
           {!t.ongoing&&(
             <div>
               <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Timeline</label>
               <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Start Date</label>
-                  <input type="date" value={t.startDate} onChange={e=>up("startDate",e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"/>
-                </div>
-                <div>
-                  <label className="text-xs text-gray-400 mb-1 block">Due Date</label>
-                  <input type="date" value={t.dueDate} onChange={e=>up("dueDate",e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"/>
-                </div>
+                <div><label className="text-xs text-gray-400 mb-1 block">Start Date</label><input type="date" value={t.startDate} onChange={e=>up("startDate",e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"/></div>
+                <div><label className="text-xs text-gray-400 mb-1 block">Due Date</label><input type="date" value={t.dueDate} onChange={e=>up("dueDate",e.target.value)} className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"/></div>
               </div>
-              {t.dueDate&&(
-                <div className={`mt-2 rounded-lg px-3 py-2 text-xs font-medium ${daysRemaining<0?"bg-red-50 text-red-700":daysRemaining<=7?"bg-orange-50 text-orange-700":"bg-indigo-50 text-indigo-700"}`}>
-                  📅 {totalDays!=null?`${totalDays}-day window · `:""}{daysRemaining<0?`${Math.abs(daysRemaining)} days overdue`:daysRemaining===0?"Due today":`${daysRemaining} days remaining`}
-                </div>
-              )}
+              {t.dueDate&&(<div className={`mt-2 rounded-lg px-3 py-2 text-xs font-medium ${daysRemaining<0?"bg-red-50 text-red-700":daysRemaining<=7?"bg-orange-50 text-orange-700":"bg-indigo-50 text-indigo-700"}`}>
+                {totalDays!=null?`${totalDays}-day window · `:""}{daysRemaining<0?`${Math.abs(daysRemaining)} days overdue`:daysRemaining===0?"Due today":`${daysRemaining} days remaining`}
+              </div>)}
             </div>
           )}
-
-          {/* Milestones */}
           <div>
-            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">{t.ongoing?"Recurring Tasks / Checklist":"Milestones"}</label>
+            <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">{t.ongoing?"Recurring Checklist":"Milestones"}</label>
             <div className="space-y-2 mb-3">
-              {t.milestones.length===0&&<p className="text-xs text-gray-300 italic">{t.ongoing?"Add recurring checklist items...":"No milestones yet — add key checkpoints below."}</p>}
-              {t.milestones.map(m=>(
+              {(!t.milestones||t.milestones.length===0)&&<p className="text-xs text-gray-300 italic">{t.ongoing?"Add recurring checklist items...":"No milestones yet."}</p>}
+              {(t.milestones||[]).map(m=>(
                 <div key={m.id} className="flex items-center gap-2 bg-gray-50 rounded-lg px-3 py-2 group">
                   <input type="checkbox" checked={m.done} onChange={e=>dispatch({type:"UPDATE_MILESTONE",id:t.id,mid:m.id,field:"done",value:e.target.checked})} className="w-4 h-4 shrink-0"/>
                   <span className={`flex-1 text-sm ${m.done?"line-through text-gray-300":"text-gray-700"}`}>{m.label}</span>
                   {m.date&&<span className="text-xs text-gray-400">{m.date}</span>}
-                  <button onClick={()=>dispatch({type:"DELETE_MILESTONE",id:t.id,mid:m.id})} className="text-gray-200 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-opacity font-bold text-sm">✕</button>
+                  <button onClick={()=>dispatch({type:"DELETE_MILESTONE",id:t.id,mid:m.id})} className="text-gray-200 hover:text-red-400 opacity-0 group-hover:opacity-100 font-bold text-sm">x</button>
                 </div>
               ))}
             </div>
@@ -694,30 +634,25 @@ function DetailPanel({task:t,dispatch,onClose}){
               <button onClick={addMilestone} className={`text-white px-3 py-2 rounded-lg text-sm font-medium ${t.ongoing?"bg-teal-600 hover:bg-teal-700":"bg-indigo-600 hover:bg-indigo-700"}`}>+</button>
             </div>
           </div>
-
-          {/* Links */}
           <div>
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Links</label>
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <span className="text-blue-500 text-xs font-bold w-24 shrink-0">🔗 Jira</span>
+                <span className="text-blue-500 text-xs font-bold w-24 shrink-0">Jira</span>
                 <input value={t.jiraUrl} onChange={e=>up("jiraUrl",e.target.value)} placeholder="Paste Jira ticket URL..." className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"/>
-                {t.jiraUrl&&<a href={t.jiraUrl} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-700 text-xs font-medium shrink-0">Open ↗</a>}
+                {t.jiraUrl&&<a href={t.jiraUrl} target="_blank" rel="noreferrer" className="text-blue-500 hover:text-blue-700 text-xs font-medium shrink-0">Open</a>}
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-purple-500 text-xs font-bold w-24 shrink-0">📄 Confluence</span>
+                <span className="text-purple-500 text-xs font-bold w-24 shrink-0">Confluence</span>
                 <input value={t.confluenceUrl} onChange={e=>up("confluenceUrl",e.target.value)} placeholder="Paste Confluence page URL..." className="flex-1 border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300"/>
-                {t.confluenceUrl&&<a href={t.confluenceUrl} target="_blank" rel="noreferrer" className="text-purple-500 hover:text-purple-700 text-xs font-medium shrink-0">Open ↗</a>}
+                {t.confluenceUrl&&<a href={t.confluenceUrl} target="_blank" rel="noreferrer" className="text-purple-500 hover:text-purple-700 text-xs font-medium shrink-0">Open</a>}
               </div>
             </div>
           </div>
-
-          {/* Notes */}
           <div>
             <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider block mb-2">Notes & Updates</label>
-            <textarea value={t.notes} onChange={e=>up("notes",e.target.value)} rows={5} placeholder="Jot down notes from impromptu meetings, blockers, context, next steps..." className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"/>
+            <textarea value={t.notes} onChange={e=>up("notes",e.target.value)} rows={5} placeholder="Notes from meetings, blockers, next steps..." className="w-full border rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-300 resize-none"/>
           </div>
-
           <div className="pt-2 border-t">
             <button onClick={()=>{dispatch({type:"DELETE_TASK",id:t.id});onClose();}} className="text-xs text-red-400 hover:text-red-600 font-medium">Remove this item</button>
           </div>
